@@ -1,0 +1,137 @@
+/* *{
+  overflow: hidden;
+} */
+.contain{
+  background-color: rgb(228, 116, 116);
+  height: 60vh;
+  width: 100vw;
+ margin-bottom: 18vw;
+ overflow: hidden;
+  
+}
+.busseat{
+  background-color:white ;
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  width: 40%;
+  height: 30%;
+ border-left: 6px solid brown;
+ display: grid;   
+grid-template-columns: 3fr auto;
+
+}
+.driver{
+  
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  font-size: 30px;
+  
+  
+}
+
+.customerseats{
+  
+  margin-left: 4rem;
+  margin-bottom: 20px;
+  width: 560.4px;
+  height:35vh ;
+  border-left:4px solid  rgb(228, 116, 116);
+  display: flex;
+  flex-direction: column;
+  gap: 10%;
+}
+.leftseat{
+
+  width: 525px;
+  height: 35%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  margin-left: 1rem;
+
+  
+}
+.onecol{
+
+  height: 80%;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+}
+.rightseat{
+ 
+  width: 525px;
+  height: 35%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  margin-left: 1rem;
+  margin-top: 0.83rem;
+}
+.window,.non-window{
+  font-size: 30px;
+  width: 50px;
+  transform: scaleX(-1);
+}
+.availableindex{
+  display: flex;
+  justify-content: space-between;
+  margin-left: 30px;
+
+gap: 70px;
+
+}
+.available{
+background-color: white;
+height: 4vh;
+width: 2vw;
+}
+.occupied{
+  height: 4vh;
+width: 2vw;
+background-color: brown;
+margin-left:10px ;
+}
+.avab{
+  margin-left:40px;
+}
+.pricebox{
+  margin-left:70vw;
+position: relative;
+bottom: 140px;
+
+}
+.back{
+  display: flex;
+  gap: 10px;
+  position: relative;
+  bottom: 30vh;
+  left: 40vw;
+  background-color: red;
+}
+.back:hover{
+  background-color: blue;
+color: white;
+}
+.backbtn{
+font-size: 40px;
+}
+.backval{
+  font-size: 30px;
+}
+
+.selected-seat {
+  background-color: blue;
+}
+
+.unselected-seat {
+  color: gray; 
+}
+
+.occupied-seat {
+  background-color: black
+}
+
+

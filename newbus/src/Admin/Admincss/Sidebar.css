@@ -1,0 +1,19 @@
+.mm{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 30px;
+    cursor: pointer;
+}
+.bus{
+background-color:yellow;
+height: 90%;
+position: relative;
+    top: 20px;
+}
+.travel{
+    background-color:yellow;
+    height: 90%;
+    position: relative;
+        top: 20px;
+}

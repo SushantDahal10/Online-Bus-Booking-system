@@ -1,0 +1,26 @@
+.success-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #f0f8ff;
+  }
+  
+  .success-container h1 {
+    font-size: 2.5em;
+    color: #4caf50;
+    margin-bottom: 20px;
+  }
+  
+  .success-container p {
+    font-size: 1.2em;
+    color: #555;
+  }
+  
+  .success-container p:nth-child(3) {
+    margin-top: 20px;
+    font-style: italic;
+  }
+  

@@ -1,0 +1,26 @@
+.cancel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #ffe6e6;
+  }
+  
+  .cancel-container h1 {
+    font-size: 2.5em;
+    color: #ff4c4c;
+    margin-bottom: 20px;
+  }
+  
+  .cancel-container p {
+    font-size: 1.2em;
+    color: #555;
+  }
+  
+  .cancel-container p:nth-child(3) {
+    margin-top: 20px;
+    font-style: italic;
+  }
+  

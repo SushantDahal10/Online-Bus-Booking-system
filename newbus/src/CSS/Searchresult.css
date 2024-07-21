@@ -1,0 +1,74 @@
+.main-container {
+    padding: 20px;
+  }
+  
+  .header {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 16px;
+    font-weight: bold;
+    color: red/* Red color */
+  }
+  
+  .data-of-bus {
+    width: 100%;
+    display: grid;
+    font-family: bold;
+    font-weight: 800;
+    font-size: larger;
+    color: black;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  }
+  
+  .bus-details {
+    display: grid;
+    padding: 10px;
+    width: 100%;
+    height: 20vh;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+    margin-top: 10px;
+    border: 2px solid rgb(88, 88, 69);
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .bus-details:hover {
+    background-color: rgb(69, 69, 134);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.01);
+  }
+  
+  .bus-name {
+    font-weight: bold;
+    font-size: 20px;
+  }
+  
+  .departure, .arrival, .fare {
+    font-weight: bold;
+    font-size: 24px;
+  }
+  
+  .duration {
+    font-size: 18px;
+  }
+  
+  .btn {
+    display: inline-block;
+    text-align: center;
+    padding: 1px;
+    width: 30%;
+    border: 2px solid transparent;
+    background-color: rgb(228, 48, 48);
+    color: white;
+    position: relative;
+    left: 89vw;
+    top: 10px;
+  }
+  
+  .view-seat {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  
