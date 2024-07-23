@@ -1,9 +1,17 @@
-.mains{
-    background-color: red;
-    text-align: center;
-    justify-content: center;
-    padding: 20px;
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
-    font-size: 40px;
+/* Navbar.css */
+
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  background-color: #333;
+  padding: 10px;
+}
+
+.nav-item {
+  color: white;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  text-decoration: underline;
 }

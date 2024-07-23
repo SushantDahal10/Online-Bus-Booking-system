@@ -1,13 +1,13 @@
-import React from 'react'
-import './Admincss/Navbar.css'
-export default function Navbar() {
-  return (
-    <div>
-      <nav className='mains'>
+import React from 'react';
+import './Admincss/Navbar.css';
 
-        <p className="written">Admin Portal</p>
-      </nav>
-      
+export default function Navbar({ handleSectionChange }) {
+  return (
+    <div className="navbar">
+      <div className="nav-item" onClick={() => handleSectionChange('dashboard')}>Dashboard</div>
+      <div className="nav-item" onClick={() => handleSectionChange('bus')}>Bus Details</div>
+      <div className="nav-item" onClick={() => handleSectionChange('travel')}>Travel Details</div>
+      <div className="nav-item" onClick={() => handleSectionChange('booking')}>Bookings</div>
     </div>
-  )
+  );
 }

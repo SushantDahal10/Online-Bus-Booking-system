@@ -55,73 +55,70 @@ export default function Main() {
     const handlesubmit = (e) => {
         e.preventDefault();
         let dates = document.getElementById('date').value;
-        setdate(dates)
-        console.log(dates)
+        setdate(dates);
         navigate(`/search?from=${fromcity}&to=${tocity}&dates=${dates}`);
     }
 
     return (
         <div className='main'>
-            <div className='inside-box1'>
-                <form onSubmit={handlesubmit} className='inside-box'>
+            <div className='form-container'>
+                <form onSubmit={handlesubmit} className='form'>
                     <div className='input-group'>
-                        {/* <TbUserDown className='icon' /> */}
+                        <TbUserDown className='icon' />
                         <input
                             type="text"
-                            className='searchfrom'
+                            className='input-field'
                             placeholder='From'
                             value={fromcity}
                             onChange={handlechange}
                             onFocus={handlefocusfrom}
                             onBlur={handleblurfrom}
                         />
+                        {focusfrom && filtered.length > 0 && (
+                            <ul className="dropdown">
+                                {filtered.map((place) => (
+                                    <li
+                                        key={place}
+                                        onMouseDown={() => handlefromvalue(place)}
+                                        className='dropdown-item'
+                                    >
+                                        {place}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     <div className='input-group'>
-                        {/* <TbUserUp className='icon' /> */}
+                        <TbUserUp className='icon' />
                         <input
                             type="text"
-                            className='searchfrom'
+                            className='input-field'
                             placeholder='To'
-                            value={tocity}  
+                            value={tocity}
                             onChange={handlechangeto}
                             onFocus={handlefocusto}
                             onBlur={handleblurto}
                         />
+                        {focusto && filteredd.length > 0 && (
+                            <ul className="dropdown">
+                                {filteredd.map((place) => (
+                                    <li
+                                        key={place}
+                                        onMouseDown={() => handlefromto(place)}
+                                        className='dropdown-item'
+                                    >
+                                        {place}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     <div className='input-group'>
-                        {/* <BsCalendar3 className='icon' /> */}
-                        <input type="text" id='date' className='searchfrom' placeholder='Date' />
+                        <BsCalendar3 className='icon' />
+                        <input type="text" id='date' className='input-field' placeholder='Date' />
                     </div>
-                    <div className='input-group1'>
-                        <button type='submit' className='search'>Search</button>
-                    </div>
+                    <button type='submit' className='submit-button'>Search</button>
                 </form>
-                {focusfrom && filtered.length > 0 && (
-                    <ul className="dropdown">
-                        {filtered.map((place) => (
-                            <li
-                                key={place}
-                                onMouseDown={() => handlefromvalue(place)}
-                                className='drpplaces'
-                            >
-                                {place}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {focusto && filteredd.length > 0 && (
-                    <ul className="dropdownto">
-                        {filteredd.map((place) => (
-                            <li
-                                key={place}
-                                onMouseDown={() => handlefromto(place)}
-                                className='drpplaces'
-                            >
-                                {place}
-                            </li>
-                        ))}
-                    </ul>
-                )}
             </div>
         </div>
     );

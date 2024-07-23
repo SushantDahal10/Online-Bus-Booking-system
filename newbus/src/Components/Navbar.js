@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import '../App.css';
 import { LuBus } from "react-icons/lu";
 import { RiCustomerServiceLine } from "react-icons/ri";
 import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
+import '../CSS/Navbar.css';
 
 export default function Navbar() {
   const [showAccount, setShowAccount] = useState(false);
-  const [loggedin, setloggedin] = useState(false);
-  const Navigate = useNavigate();
+  const [loggedin, setLoggedin] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleaccount = async () => {
+    const handleAccount = async () => {
       try {
         const response = await fetch('http://localhost:8000/getsuseremail', {
           method: 'POST',
@@ -19,22 +19,22 @@ export default function Navbar() {
           credentials: 'include',
         });
         if (response.ok) {
-          setloggedin(true);
+          setLoggedin(true);
         } else {
-          setloggedin(false);
+          setLoggedin(false);
         }
       } catch (err) {
         console.log(err);
       }
     };
-    handleaccount();
+    handleAccount();
   }, []);
 
   const accountClick = () => {
     setShowAccount(!showAccount);
   };
 
-  const handlesignout = async () => {
+  const handleSignout = async () => {
     try {
       const response = await fetch('http://localhost:8000/signout', {
         method: 'POST',
@@ -43,9 +43,9 @@ export default function Navbar() {
       });
 
       if (response.ok) {
-        setloggedin(false);
-        alert('sucessfully logged out')
-        Navigate('/');
+        setLoggedin(false);
+        alert('Successfully logged out');
+        navigate('/');
       } else {
         console.log('Signout failed');
       }
@@ -56,28 +56,31 @@ export default function Navbar() {
 
   return (
     <div>
-      <nav className='bg-white'>
-        <div className='flex justify-between items-center ml-36 xs:ml-2'>
-          <LuBus className='h-20 w-20 xs:h-12 xs:w-12' onClick={() => Navigate('/')} />
-          <div className="flex space-x-8 xs:space-x-4 mr-40 xs:mr-2">
-            <div className='flex flex-col items-center'>
-              <RiCustomerServiceLine className='w-6 h-6 xs:w-4 xs:h-4' />
-              <span className='text-base xs:text-sm'>help</span>
-            </div>
-            <div className='flex flex-col items-center relative' onClick={accountClick} >
-              <MdAccountCircle className='w-6 h-6 xs:w-4 xs:h-4' />
-              <span className='text-base xs:text-sm'>account</span>
-              {loggedin === false &&
-                <div id='account' className={`absolute top-full right-0 ${showAccount ? 'flex' : 'hidden'} flex-col bg-white border mt-2 p-2 z-50`}>
-                  <div className="signin hover:bg-blue-700 cursor-pointer" onClick={() => Navigate('/login')}>Signin</div>
-                  <div className="signup hover:bg-blue-700 cursor-pointer" onClick={() => Navigate('/signup')}>Signup</div>
-               
-                </div>}
-              {loggedin === true &&
-                <div id='account' className={`absolute top-full right-0 ${showAccount ? 'flex' : 'hidden'} flex-col bg-white border mt-2 p-2 z-50`}>
-                  <div className="signin hover:bg-blue-700 cursor-pointer" onClick={handlesignout}>Signout</div>
-                  <div className="signup hover:bg-blue-700 cursor-pointer" onClick={() => Navigate('/yourticket')}>Tickets</div>
-                </div>}
+      <nav className='navbar'>
+        <div className='logo' onClick={() => navigate('/')}>
+          <LuBus />
+          <span>Bus</span>
+        </div>
+        <div className="nav-items">
+          <div className='nav-item'>
+            <RiCustomerServiceLine />
+            <span>Help</span>
+          </div>
+          <div className='nav-item' onClick={accountClick}>
+            <MdAccountCircle />
+            <span>Account</span>
+            <div className={`dropdown-menu ${showAccount ? 'show' : ''}`}>
+              {!loggedin ? (
+                <>
+                  <div onClick={() => navigate('/login')}>Sign In</div>
+                  <div onClick={() => navigate('/signup')}>Sign Up</div>
+                </>
+              ) : (
+                <>
+                  <div onClick={handleSignout}>Sign Out</div>
+                  <div onClick={() => navigate('/yourticket')}>Tickets</div>
+                </>
+              )}
             </div>
           </div>
         </div>

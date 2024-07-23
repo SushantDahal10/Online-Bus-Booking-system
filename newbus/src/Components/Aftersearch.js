@@ -1,133 +1,141 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import '../CSS/Aftersearch.css';
-import { TbUserDown, TbUserUp } from "react-icons/tb";
-import { BsCalendar3 } from "react-icons/bs";
-import cities from './cities';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-export default function Main() {
+import cities from './cities';
+
+export default function Aftersearch() {
     const navigate = useNavigate();
-    const [fromcity, setfrom] = useState('');
-    const [tocity, settocity] = useState('');
-    const [date, setdate] = useState('');
-    const [filtered, setfiltered] = useState([]);
-    const [filteredd, setfilteredd] = useState([]);
-    const [focusfrom, setfocusfrom] = useState(false);
-    const [focusto, setfocusto] = useState(false);
+    const [fromCity, setFromCity] = useState('');
+    const [toCity, setToCity] = useState('');
+    const [date, setDate] = useState('');
+    const [filteredFrom, setFilteredFrom] = useState([]);
+    const [filteredTo, setFilteredTo] = useState([]);
+    const [focusFrom, setFocusFrom] = useState(false);
+    const [focusTo, setFocusTo] = useState(false);
 
-    const handlefocusfrom = () => setfocusfrom(true);
-    const handlefocusto = () => setfocusto(true);
-    const handleblurto = () => setfocusto(false);
-    const handleblurfrom = () => setfocusfrom(false);
+    const fromRef = useRef();
+    const toRef = useRef();
 
-    const handlechange = (e) => {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (fromRef.current && !fromRef.current.contains(event.target)) {
+                setFocusFrom(false);
+            }
+            if (toRef.current && !toRef.current.contains(event.target)) {
+                setFocusTo(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleFocusFrom = () => setFocusFrom(true);
+    const handleFocusTo = () => setFocusTo(true);
+
+    const handleChangeFrom = (e) => {
         let val = e.target.value;
-        setfrom(val);
+        setFromCity(val);
         if (val.length >= 2) {
             let filters = cities.filter((place) => place.toLowerCase().includes(val.toLowerCase()));
-            setfiltered(filters);
+            setFilteredFrom(filters);
         } else {
-            setfiltered([]);
+            setFilteredFrom([]);
         }
     }
 
-    const handlechangeto = (e) => {
+    const handleChangeTo = (e) => {
         let val = e.target.value;
-        settocity(val);
+        setToCity(val);
         if (val.length >= 2) {
             let filters = cities.filter((place) => place.toLowerCase().includes(val.toLowerCase()));
-            setfilteredd(filters);
+            setFilteredTo(filters);
         } else {
-            setfilteredd([]);
+            setFilteredTo([]);
         }
     }
 
-    const handlefromvalue = (place) => {
-        setfrom(place);
-        setfiltered([]);
+    const handleSelectFrom = (place) => {
+        setFromCity(place);
+        setFilteredFrom([]);
     }
 
-    const handlefromto = (places) => {
-        settocity(places);
-        setfilteredd([]);
+    const handleSelectTo = (place) => {
+        setToCity(place);
+        setFilteredTo([]);
     }
 
-    const handlesubmit = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        let dates = document.getElementById('date').value;
-        setdate(dates)
-        console.log(dates)
-        navigate(`/search?from=${fromcity}&to=${tocity}&dates=${dates}`);
+        let selectedDate = document.getElementById('date').value;
+        setDate(selectedDate);
+        navigate(`/search?from=${fromCity}&to=${toCity}&date=${selectedDate}`);
     }
 
     return (
         <>
-        <Navbar></Navbar>
-     
-        <div className='main'>
-
-            <div className='inside-box1'>
-                <form onSubmit={handlesubmit} className='inside-box'>
-                    <div className='input-group'>
-                        {/* <TbUserDown className='icon' /> */}
-                        <input
-                            type="text"
-                            className='searchfrom'
-                            placeholder='From'
-                            value={fromcity}
-                            onChange={handlechange}
-                            onFocus={handlefocusfrom}
-                            onBlur={handleblurfrom}
-                        />
-                    </div>
-                    <div className='input-group'>
-                        {/* <TbUserUp className='icon' /> */}
-                        <input
-                            type="text"
-                            className='searchfrom'
-                            placeholder='To'
-                            value={tocity}  
-                            onChange={handlechangeto}
-                            onFocus={handlefocusto}
-                            onBlur={handleblurto}
-                        />
-                    </div>
-                    <div className='input-group'>
-                        {/* <BsCalendar3 className='icon' /> */}
-                        <input type="text" id='date' className='searchfrom' placeholder='Date' />
-                    </div>
-                    <div className='input-group1'>
-                        <button type='submit' className='search'>ModifySearch</button>
-                    </div>
-                </form>
-                {focusfrom && filtered.length > 0 && (
-                    <ul className="dropdown">
-                        {filtered.map((place) => (
-                            <li
-                                key={place}
-                                onMouseDown={() => handlefromvalue(place)}
-                                className='drpplaces'
-                            >
-                                {place}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {focusto && filteredd.length > 0 && (
-                    <ul className="dropdownto">
-                        {filteredd.map((place) => (
-                            <li
-                                key={place}
-                                onMouseDown={() => handlefromto(place)}
-                                className='drpplaces'
-                            >
-                                {place}
-                            </li>
-                        ))}
-                    </ul>
-                )}
+            <Navbar />
+            <div className='custom-main'>
+                <div className='custom-inside-box-wrapper'>
+                    <form onSubmit={handleSubmit} className='custom-inside-box'>
+                        <div className='custom-input-group' ref={fromRef}>
+                            <input
+                                type="text"
+                                className='custom-search-input'
+                                placeholder='From'
+                                value={fromCity}
+                                onChange={handleChangeFrom}
+                                onFocus={handleFocusFrom}
+                            />
+                            {focusFrom && filteredFrom.length > 0 && (
+                                <ul className="custom-dropdown">
+                                    {filteredFrom.map((place) => (
+                                        <li
+                                            key={place}
+                                            onMouseDown={() => handleSelectFrom(place)}
+                                            className='custom-dropdown-item'
+                                        >
+                                            {place}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <div className='custom-input-group' ref={toRef}>
+                            <input
+                                type="text"
+                                className='custom-search-input'
+                                placeholder='To'
+                                value={toCity}
+                                onChange={handleChangeTo}
+                                onFocus={handleFocusTo}
+                            />
+                            {focusTo && filteredTo.length > 0 && (
+                                <ul className="custom-dropdown">
+                                    {filteredTo.map((place) => (
+                                        <li
+                                            key={place}
+                                            onMouseDown={() => handleSelectTo(place)}
+                                            className='custom-dropdown-item'
+                                        >
+                                            {place}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                        <div className='custom-input-group'>
+                            <input type="text" id='date' className='custom-search-input' placeholder='Date' />
+                        </div>
+                        <div className='custom-input-group'>
+                            <button type='submit' className='custom-search-button'>Modify Search</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
         </>
     );
 }

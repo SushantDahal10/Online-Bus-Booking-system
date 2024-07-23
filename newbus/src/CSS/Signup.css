@@ -1,0 +1,117 @@
+/* Signup.css */
+
+/* Container for the signup page */
+.signup-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f0f4f8; /* Light background color */
+    min-height: 100vh;
+}
+
+/* Header styles */
+.signup-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo {
+    font-size: 3rem;
+    color: #007bff; /* Blue color */
+    transition: color 0.3s ease;
+}
+
+.logo:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+.signup-header h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333; /* Dark gray */
+}
+
+/* Form container styles */
+.signup-form-container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.signup-form-container:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-5px);
+}
+
+/* Form input styles */
+.input-group {
+    margin-bottom: 1rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.875rem;
+    color: #555; /* Medium gray */
+    margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #333; /* Dark gray */
+    transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #007bff; /* Blue border on focus */
+    outline: none;
+}
+
+/* Button styles */
+.submit-button {
+    width: 100%;
+    background-color: #007bff; /* Blue color */
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #0056b3; /* Darker blue */
+    transform: translateY(-2px);
+}
+
+/* Signup option styles */
+.signup-option {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.signup-option p {
+    margin-bottom: 0.5rem;
+    color: #555; /* Medium gray */
+}
+
+.signup-option a {
+    color: #007bff; /* Blue color */
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.signup-option a:hover {
+    color: #0056b3; /* Darker blue */
+}

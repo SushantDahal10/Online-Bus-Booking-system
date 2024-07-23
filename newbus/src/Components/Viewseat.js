@@ -7,14 +7,14 @@ import { IoArrowBackOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Addseat } from '../redux/busprice';
-import Footer from './Footer'
+import Footer from './Footer';
+
 export default function Viewseat() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const params = new URLSearchParams(window.location.search);
   const [occupied, setOccupied] = useState([]);
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
- 
 
   const detaiofpayment = {
     from: params.get('from'),
@@ -28,7 +28,7 @@ export default function Viewseat() {
   };
 
   const handleBack = () => {
-    navigate('/search');
+    navigate(`/search?from=${params.get('from')}&to=${params.get('to')}&dates=${params.get('date')}`);
   };
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Viewseat() {
         if (response.ok) {
           const data = await response.json();
           const occupiedSeats = data.result.map(booking => booking.seat_no);
-          setOccupied(occupiedSeats); 
+          setOccupied(occupiedSeats);
         }
       } catch (e) {
         console.log(e);
@@ -87,15 +87,15 @@ export default function Viewseat() {
               {Array.from({ length: 10 }).map((_, index) => (
                 <div className='onecol' key={index}>
                   <div className="window">
-                    <PiSeat 
-                      className={isOccupied(`L${index * 2 + 1}`) ? 'occupied-seat' : isSelected(`L${index * 2 + 1}`) ? 'selected-seat' : 'unselected-seat'}
-                      onClick={() => handleSeatClick(`L${index * 2 + 1}`)} 
+                    <PiSeat
+                      className={`pi-seat ${isOccupied(`L${index * 2 + 1}`) ? 'occupied-seat' : isSelected(`L${index * 2 + 1}`) ? 'selected-seat' : 'unselected-seat'}`}
+                      onClick={() => handleSeatClick(`L${index * 2 + 1}`)}
                     />
                   </div>
                   <div className="non-window">
-                    <PiSeat 
-                      className={isOccupied(`L${index * 2 + 2}`) ? 'occupied-seat' : isSelected(`L${index * 2 + 2}`) ? 'selected-seat' : 'unselected-seat'}
-                      onClick={() => handleSeatClick(`L${index * 2 + 2}`)} 
+                    <PiSeat
+                      className={`pi-seat ${isOccupied(`L${index * 2 + 2}`) ? 'occupied-seat' : isSelected(`L${index * 2 + 2}`) ? 'selected-seat' : 'unselected-seat'}`}
+                      onClick={() => handleSeatClick(`L${index * 2 + 2}`)}
                     />
                   </div>
                 </div>
@@ -105,15 +105,15 @@ export default function Viewseat() {
               {Array.from({ length: 10 }).map((_, index) => (
                 <div className='onecol' key={index}>
                   <div className="window">
-                    <PiSeat 
-                      className={isOccupied(`R${index * 2 + 1}`) ? 'occupied-seat' : isSelected(`R${index * 2 + 1}`) ? 'selected-seat' : 'unselected-seat'}
-                      onClick={() => handleSeatClick(`R${index * 2 + 1}`)} 
+                    <PiSeat
+                      className={`pi-seat ${isOccupied(`R${index * 2 + 1}`) ? 'occupied-seat' : isSelected(`R${index * 2 + 1}`) ? 'selected-seat' : 'unselected-seat'}`}
+                      onClick={() => handleSeatClick(`R${index * 2 + 1}`)}
                     />
                   </div>
                   <div className="non-window">
-                    <PiSeat 
-                      className={isOccupied(`R${index * 2 + 2}`) ? 'occupied-seat' : isSelected(`R${index * 2 + 2}`) ? 'selected-seat' : 'unselected-seat'}
-                      onClick={() => handleSeatClick(`R${index * 2 + 2}`)} 
+                    <PiSeat
+                      className={`pi-seat ${isOccupied(`R${index * 2 + 2}`) ? 'occupied-seat' : isSelected(`R${index * 2 + 2}`) ? 'selected-seat' : 'unselected-seat'}`}
+                      onClick={() => handleSeatClick(`R${index * 2 + 2}`)}
                     />
                   </div>
                 </div>
@@ -131,7 +131,7 @@ export default function Viewseat() {
         </div>
         {selectedSeats.length > 0 && (
           <div className='pricebox'>
-            <Payement className='pricebox' paymentdetail={detaiofpayment} />
+            <Payement paymentdetail={detaiofpayment} />
           </div>
         )}
         <button onClick={handleBack} className="back">
@@ -143,8 +143,7 @@ export default function Viewseat() {
           </div>
         </button>
       </div>
-      <Footer></Footer>
-    </div>
+      <Footer />
+    </div>  
   );
 }
-

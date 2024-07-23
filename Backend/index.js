@@ -66,19 +66,48 @@ let temporarydata={};
             }
         );
     });
+    app.put('/travelupdate', (req, res) => {
+        const { bus_id, source, destination, departure_time, arrival_time, price } = req.body;
+    
+        
+        if (!bus_id || !source || !destination || !departure_time || !arrival_time || !price) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+    
+        const query = `
+            UPDATE travel 
+            SET source = ?, destination = ?, departure_time = ?, arrival_time = ?, price = ?
+            WHERE bus_id = ?
+        `;
+    
+       
+        connection.query(query, [source, destination, departure_time, arrival_time, price, bus_id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: 'Database query error' });
+            }
+    
+  
+            if (result.affectedRows > 0) {
+                res.status(200).json({ message: 'Travel details updated successfully' });
+            } else {
+                res.status(404).json({ error: 'Travel record not found' });
+            }
+        });
+    });
+    
 
 
     app.post('/admin/travel', (req, res) => {
         console.log(req.body);
-        const { source, destination, fare, duration, departure, arrival, date_of_travel,bus_number } = req.body;
+        const { source, destination, fare, duration, departure, arrival, date_of_travel,bus_id } = req.body;
         
         connection.query(
-            'INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel,bus_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [source, destination, fare, duration, departure, arrival, date_of_travel,bus_number],
+            'INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel,bus_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [source, destination, fare, duration, departure, arrival, date_of_travel,bus_id],
             (err, result) => {
                 if (err) {
                     console.error(err);
-                    res.status(500).send('Error inserting travel data');
+                    res.status(500).send('Error inserting travel data');    
                     return;
                 }
                 console.log('Travel Insert successful:', result);
@@ -86,6 +115,14 @@ let temporarydata={};
             }
         );
     });
+    app.delete('/deletetravel',(req,res)=>{
+        const {travel_id}=req.query;
+        connection.query('DELETE FROM travel WHERE travel_id=?',[travel_id],(err,result)=>{
+            if(err){
+                console.error(err);
+            }
+            res.status(200).json({result:result})
+        })   })
     app.post('/signup', (req, res) => {
         const { email, password } = req.body;
     
@@ -170,7 +207,7 @@ let temporarydata={};
     app.post('/savepassengerdetails', (req, res) => {
         console.log(req.body); // Log the request body to debug
     
-        const { travel_id, passenger, contactDetails } = req.body;
+        const { travel_id, passenger, contactDetails,price } = req.body;
         const token = req.cookies.token;
     
         jwt.verify(token, 'rams', (err, decoded) => {
@@ -194,8 +231,8 @@ let temporarydata={};
                     }
     
                     if (result.length === 0) {
-                        const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                        const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone];
+                        const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no,price) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)';
+                        const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone,price];
     
                         connection.query(insertQuery, insertValues, (err, insertResult) => {
                             if (err) {
@@ -254,7 +291,7 @@ connection.query(query,[travel_id],(err,result)=>{
 
 
         connection.query(
-            'SELECT t.* ,b.bus_name FROM travel t JOIN busdetail b ON t.bus_number=b.bus_number WHERE t.source=? AND t.destination=? OR t.date_of_travel=?',
+            'SELECT t.* ,b.bus_name,b.bus_number FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? OR t.date_of_travel=?',
             [from, to, date],
             (err, result) => {
                 if (err) {
@@ -267,7 +304,108 @@ connection.query(query,[travel_id],(err,result)=>{
             }
         );
     });
+app.get('/admindetail',(req,res)=>{
+      connection.query('SELECT COUNT(*) AS bookingcount,SUM(price) as totalrevenue FROM booking',(err,result)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.status(200).json({result:result});
+        }
+      })
+})
+app.get('/busdetail',(req,res)=>{
+    connection.query('SELECT * FROM busdetail',(err,result)=>{
+      if(err){
+          console.log(err);
+      }
+      else{
+          res.status(200).json({result:result});
+      }
+    })
+})  
+app.post('/busadd',(req,res)=>{
+    console.log(req.body)
+    const{bus_number,bus_name,contactno,capacity}=req.body
+    connection.query('INSERT INTO busdetail(bus_number,bus_name,contactno,capacity) VALUES(?,?,?,?)',[bus_number,bus_name,contactno,capacity],(err,result)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.status(200).json({message:'succesfully inserted'})
+        }
+    })
+})
+app.put('/busupdate', (req, res) => {
+    const { bus_number, bus_name, contactno, capacity } = req.body;
+    const sql = 'UPDATE busdetail SET bus_name = ?, contactno = ?, capacity = ? WHERE bus_number = ?';
+    
+    connection.query(sql, [bus_name, contactno, capacity, bus_number], (err, result) => {
+        if (err) {
+            console.error('Error updating bus detail:', err);
+            res.status(500).send('Error updating bus detail');
+            return;
+        }
+        res.send('Bus detail updated successfully');
+    });
+});
+app.delete('/deletebus',(req,res)=>{
+    const{bus_number}=req.query
+connection.query('DELETE FROM busdetail WHERE bus_number=?',[bus_number],(err,result)=>{
+    if(err){
+        console.log(err);}
+        else{
+            res.status(200).json({message:'succesfully deleted'})
+        }
+})
 
+})
+app.get('/bookings',(req,res)=>{
+    const query = 'SELECT b.booking_id,b.bus_number, b.seat_no, b.booking_email, b.name, b.age, b.gender, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.id = bd.bus_id'
+    connection.query(query,(err,result)=>{
+      if(err){
+          console.log(err);
+      }
+      else{
+          res.status(200).json({result:result});
+      }
+    })
+})
+app.post('/getbusid', (req, res) => {
+    const { bus_number } = req.body;
+    console.log(req.body);
+
+    if (!bus_number) {
+        return res.status(400).json({ error: 'Bus number is required' });
+    }
+
+    const query = 'SELECT bus_id FROM busdetail WHERE bus_number = ?';
+
+    connection.query(query, [bus_number], (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: 'Database query error' });
+        }
+
+        // Check if bus_id is found
+        if (results.length > 0) {
+            const bus_id = results[0].bus_id; 
+            return res.status(200).json({ result: { bus_id } });    
+        } else {
+            return res.status(404).json({ error: 'Bus not found' });
+        }
+    });
+});
+
+
+app.get('/totaloperators',(req,res)=>{
+    connection.query('SELECT COUNT(*) AS totaloperator FROM busdetail',(err,result)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.status(200).json({result:result});
+        }
+})})
     app.post('/getsuseremail',authenticate,(req,res)=>{
         const token = req.cookies.token;
         jwt.verify(token, 'rams', (err, decoded) => {
@@ -287,7 +425,7 @@ connection.query(query,[travel_id],(err,result)=>{
             }
             const { email } = decoded;
             
-            const query='SELECT * FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_number = bd.bus_number where b.booking_email=?';
+            const query='SELECT * FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id where b.booking_email=?';
            connection.query(query,[email],(err,result)=>{
             if(err){
                 console.log(err);
@@ -349,7 +487,7 @@ connection.query(query,[travel_id],(err,result)=>{
         try {
           const info = await transporter.sendMail({
             from: '"New Bus Pvt. Ltd" <holidaily933@gmail.com>', 
-            to: email, // recipient address
+            to: email,      
             subject: 'Your OTP Code for Password Reset', 
             text: `Hello,
       

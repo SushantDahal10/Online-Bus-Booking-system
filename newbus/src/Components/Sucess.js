@@ -17,13 +17,7 @@ console.log(obj)
       }
 
       try {
-        // const doc = <StyledTicketPDF tickets={obj.tickets} />;
-        // const blob = await pdf(doc).toBlob();
-        // console.log('Passenger Object:', obj);
-
-        // const formData = new FormData();
-        // formData.append('file', blob, 'tickets.pdf');
-        // formData.append('details', JSON.stringify(obj));
+       
 
         const response = await fetch('http://localhost:8000/savepassengerdetails', {
           method: 'POST',

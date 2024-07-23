@@ -1,111 +1,153 @@
+/* General container styles */
 .container {
-    padding: 20px;
-    max-width: 100%;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-  }
-  
-  .title {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .section {
-    border: 1px solid #e0e0e0;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-  }
-  
-  .section-title {
-    margin-bottom: 15px;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .form-group {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .form-group label {
-    flex: 0 0 30%; /* Adjust label width */
-    margin-right: 10px; /* Space between label and input */
-  }
-  
-  .form-group input[type="text"],
-  .form-group input[type="number"],
-  .form-group input[type="email"],
-  .form-group input[type="tel"] {
-    flex: 1; /* Take remaining space */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Ensure padding and border are included in the width */
-  }
-  
-  .form-group input[type="radio"] {
-    margin-right: 5px;
-  }
-  
-  .phone-input {
-    display: flex;
-    align-items: center;
-  }
-  
-  .phone-input select {
-    margin-right: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .footer {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  .footer p {
-    margin: 10px 0;
-  }
-  
-  .footer .proceed-button {
-    background-color: #ff0000;
-    color: #fff;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .footer .proceed-button:hover {
-    background-color: #e60000;
-  }
-  
-  .info-text {
-    background-color: #ffffcc;
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    font-size: 14px;
-  }
-  
-  .agreement {
-    font-size: 12px;
-  }
-  
-  .agreement a {
-    color: #007bff;
-    text-decoration: none;
-  }
-  
-  .agreement a:hover {
-    text-decoration: underline;
-  }
-  
-  .exclusive {
-    font-size: 12px;
-  }
-  
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9f9; /* Light background for contrast */
+  border-radius: 10px; /* Rounded corners for a modern look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Title styles */
+.title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2rem;
+  color: #333; /* Darker color for readability */
+  font-weight: 600; /* Slightly bolder text */
+}
+
+/* Section styles */
+.section {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  background-color: #fff; /* White background for sections */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+}
+
+/* Section title styles */
+.section-title {
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #444; /* Slightly lighter than the title */
+  display: flex;
+  align-items: center;
+  font-weight: 500; /* Medium weight */
+}
+
+.section-title span {
+  font-size: 1.5rem;
+  margin-right: 10px;
+}
+
+/* Form group styles */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Spacing between label and input */
+}
+
+.form-group label {
+  flex: 0 0 35%; /* Adjust label width */
+  font-weight: 500;
+  color: #555; /* Darker color for better readability */
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  flex: 1; /* Take remaining space */
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem; /* Increase font size */
+  transition: border-color 0.3s; /* Smooth border color transition */
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="tel"]:focus {
+  border-color: #007bff; /* Highlight border on focus */
+  outline: none; /* Remove default outline */
+}
+
+/* Radio button styles */
+.form-group input[type="radio"] {
+  margin-right: 8px;
+}
+
+/* Phone input container styles */
+.phone-input {
+  display: flex;
+  align-items: center;
+}
+
+.phone-input select {
+  margin-right: 12px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* Footer styles */
+.footer {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.footer p {
+  margin: 15px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.footer .proceed-button {
+  background-color: #28a745; /* Green for success */
+  color: #fff;
+  padding: 15px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.footer .proceed-button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.info-text {
+  background-color: #e7f0e7; /* Light green background for info text */
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.agreement {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.agreement a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.agreement a:hover {
+  text-decoration: underline;
+}
+
+.exclusive {
+  font-size: 0.9rem;
+  color: #555;
+}

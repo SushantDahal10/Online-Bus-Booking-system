@@ -1,72 +1,69 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import {loadStripe} from '@stripe/stripe-js';
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../CSS/Payment.css'; 
+
 export default function Payment(props) {
- 
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
-  const {paymentdetail}=props;
-  const quantity=useSelector(state=>state.busprice.quantity)
-  const seatnumbers=useSelector(state=>state.busprice.selectedSeats)
-  const price=quantity*paymentdetail.fare;
-  const Navigate=useNavigate()
-  
- 
-  const makepayment = async () => {
-Navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}`)
+  const { paymentdetail } = props;
+  const quantity = useSelector(state => state.busprice.quantity);
+  const price = quantity * paymentdetail.fare;
+  const navigate = useNavigate();
+
+  const makePayment = () => {
+    navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}`);
   }
 
-  
-
   return (
-    <div className="flex justify-center items-center h-screen ">
-      <div className="bg-white w-80 p-6 shadow-md rounded-lg">
-        <div className="mb-0">
-          <h2 className="text-base font-bold text-gray-700 mb-2">Boarding & Dropping</h2>
-          <div className="flex items-center mb-2">
-            <div className="w-4 h-4 bg-black rounded-full mr-2"></div>
-            <div className="flex-grow">
-              <div className="text-sm font-bold text-gray-700">{paymentdetail.from}</div>
-            
+    <div className="payment-container">
+      <div className="payment-card">
+        <h2 className="card-title">Payment Summary</h2>
+
+        
+        <div className="section">
+          <h3 className="section-title">Boarding & Dropping</h3>
+          <div className="details">
+            <div className="detail-item">
+              <div className="dot boarding"></div>
+              <div className="detail-content">
+                <p className="detail-location">{paymentdetail.from}</p>
+                <p className="detail-time">{paymentdetail.departure}</p>
+              </div>
             </div>
-            <div className="text-base font-bold text-gray-700">{paymentdetail.departure}</div>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-400 rounded-full mr-2"></div>
-            <div className="flex-grow">
-              <div className="text-sm font-bold text-gray-700">{paymentdetail.to}</div>
-
+            <div className="detail-item">
+              <div className="dot dropping"></div>
+              <div className="detail-content">
+                <p className="detail-location">{paymentdetail.to}</p>
+                <p className="detail-time">{paymentdetail.arrival}</p>
+              </div>
             </div>
-            <div className="text-base font-bold text-gray-700">{paymentdetail.arrival}</div>
           </div>
         </div>
 
-        <div className="mb-4">
-          <h2 className="text-base font-bold text-gray-700 mb-2">Seat No.</h2>
-          <div className="flex space-x-4">
-          {seatnumbers.map((seatnumber, index) => {
-  return (
-    <div key={index} className="text-base font-bold text-gray-700">
-      {seatnumber}
-    </div>
-  );
-})}
-</div>
-
-        </div>
-
-        <div className="mb-4">
-          <h2 className="text-base font-bold text-gray-700 mb-2">Fare Details</h2>
-          <div className="flex justify-between items-center mb-2">
-            <div className="text-sm text-gray-600">Amount</div>
-            <div className="text-base font-bold text-gray-700">INR {price}</div>
+        {/* Seat Numbers */}
+        <div className="section">
+          <h3 className="section-title">Seat Numbers</h3>
+          <div className="seats">
+            {selectedSeats.map((seatnumber, index) => (
+              <span key={index} className="seat-number">{seatnumber}</span>
+            ))}
           </div>
-          <div className="text-xs text-gray-600 mb-2">Taxes will be calculated during payment</div>
-          <div className="text-sm text-red-600 cursor-pointer">Show Fare Details</div>
         </div>
 
-        <button className="w-full py-3 bg-red-600 text-white rounded-md font-bold text-base cursor-pointer hover:bg-red-700" onClick={makepayment}>
+        {/* Fare Details */}
+        <div className="section">
+          <h3 className="section-title">Fare Details</h3>
+          <div className="fare-details">
+            <p className="fare-label">Amount</p>
+            <p className="fare-amount">INR {price}</p>
+          </div>
+        
+        </div>
+
+        <button 
+          className="proceed-button" 
+          onClick={makePayment}
+        >
           PROCEED TO BOOK
         </button>
       </div>

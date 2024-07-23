@@ -1,19 +1,50 @@
-.mm{
+/* Sidebar styling */
+.mm {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    font-size: 30px;
+    align-items: center;
+    background-color: #f4f4f4;
+    padding: 20px;
+    width: 250px;
+    height: 100vh;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  .mm > div {
+    width: 100%;
+    text-align: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
     cursor: pointer;
-}
-.bus{
-background-color:yellow;
-height: 90%;
-position: relative;
-    top: 20px;
-}
-.travel{
-    background-color:yellow;
-    height: 90%;
-    position: relative;
-        top: 20px;
-}
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .mm > div:hover {
+    background-color: #007bff;
+    color: #ffffff;
+  }
+  
+  .bus {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+  }
+  
+  .travel {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #ffffff;
+    border: 1px solid #dcdcdc;
+  }
+  
+.dashboard{
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #ffffff;
+  border: 1px solid #dcdcdc;  
+}  
