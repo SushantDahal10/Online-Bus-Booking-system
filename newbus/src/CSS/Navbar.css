@@ -65,6 +65,7 @@
     border-radius: 4px;
     padding: 10px;
     display: none;
+    color: black;
     z-index: 20;
   }
   

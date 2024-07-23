@@ -18,7 +18,7 @@ import PassengerDetails from './Components/PassengerDetail';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Passwordchange from './Components/Passwordchange';
 import store from './redux/Store';
-
+import AdminLogin from './Admin/Adminlogin';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
@@ -39,6 +39,7 @@ root.render(
           <Route path='/forgotpassword' element={<Forgotpass />} />
           <Route path='/changepassword' element={<Passwordchange />} />
           <Route path='/otp' element={<Otp />} />
+          <Route path='/adminlogin' element={<AdminLogin></AdminLogin>} />
         </Routes>
       </BrowserRouter>
     </Provider>

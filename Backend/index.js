@@ -29,7 +29,9 @@ let temporarydata={};
     }));
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
-    ///authenticate
+    function generateToken(email) {
+        return jwt.sign({ email }, 'adminlogin', { expiresIn: '1h' });
+      }
     const authenticate = (req, res, next) => {
         const token = req.cookies.token;
         console.log(token)
@@ -45,10 +47,44 @@ let temporarydata={};
             next();
         });
     };
+    const verifyAdminToken = (req, res, next) => {
+        const token = req.cookies.admintoken; 
+        console.log(token);
+        if (!token) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+    
+        jwt.verify(token, 'adminlogin', (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+            req.email = decoded.email; 
+            next();
+        });
+    };
+    
+      
+      app.post('/adminlogin', (req, res) => {
+        const { email, password } = req.body;
+      
+       
+        if (email === 'sushantdahal733@gmail.com' && password === '12345') {
+      
+          const token = generateToken(email);
+     
+          res.cookie('admintoken', token, { httpOnly: true, secure: true, maxAge: 36000000 }); 
+          res.status(200).json({ message: 'Login successful' });
+        } else {
+          res.status(401).json({ error: 'Invalid email or password' });
+        }
+      });
+      app.get('/protectedadmin', verifyAdminToken, (req, res) => {
+        res.status(200).json({ message: 'This is a protected route', email: req.email });
+      });
     app.get('/protected-route',  authenticate, (req, res) => {
         res.json({ message: 'This is a protected route', user: req.user });
     });
-    app.post('/admin/bus', (req, res) => {
+    app.post('/admin/bus',verifyAdminToken, (req, res) => {
         console.log(req.body);
         const { bus_number, bus_name, contactno, capacity } = req.body;
         
@@ -66,56 +102,90 @@ let temporarydata={};
             }
         );
     });
-    app.put('/travelupdate', (req, res) => {
-        const { bus_id, source, destination, departure_time, arrival_time, price } = req.body;
-    
-        
-        if (!bus_id || !source || !destination || !departure_time || !arrival_time || !price) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-    
-        const query = `
+    app.get('/traveldetail',verifyAdminToken,(req,res)=>{
+        connection.query('SELECT t.*,b.bus_number from travel t JOIN busdetail b ON t.bus_id=b.bus_id',(err,result)=>{
+            if(err){
+                console.error(err);
+            }
+            else{
+                res.status(200).json({result:result})
+            }
+        })
+    })
+    app.put('/travelupdate',verifyAdminToken, (req, res) => {
+        const { travel_id } = req.query;
+        const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_number } = req.body;
+      
+        // First, check if the bus number exists in the busdetail table
+        const checkBusQuery = 'SELECT bus_id FROM busdetail WHERE bus_number = ?';
+        connection.query(checkBusQuery, [bus_number], (err, busResult) => {
+          if (err) {
+            return res.status(500).json({ error: 'Database query error' });
+          }
+      
+          if (busResult.length === 0) {
+            return res.status(404).json({ error: 'Bus number not found' });
+          }
+      
+          const bus_id = busResult[0].bus_id;
+      
+          const updateTravelQuery = `
             UPDATE travel 
-            SET source = ?, destination = ?, departure_time = ?, arrival_time = ?, price = ?
-            WHERE bus_id = ?
-        `;
-    
-       
-        connection.query(query, [source, destination, departure_time, arrival_time, price, bus_id], (err, result) => {
+            SET source = ?, destination = ?, departure = ?, arrival = ?, fare = ?, duration = ?, bus_id = ?, date_of_travel = ?
+            WHERE travel_id = ?
+          `;
+      
+          connection.query(updateTravelQuery, [source, destination, departure, arrival, fare, duration, bus_id, date_of_travel, travel_id], (err, result) => {
             if (err) {
-                return res.status(500).json({ error: 'Database query error' });
+              return res.status(500).json({ error: 'Database query error' });
             }
-    
-  
+      
             if (result.affectedRows > 0) {
-                res.status(200).json({ message: 'Travel details updated successfully' });
+              res.status(200).json({ message: 'Travel details updated successfully' });
             } else {
-                res.status(404).json({ error: 'Travel record not found' });
+              res.status(404).json({ error: 'Travel record not found' });
             }
+          });
         });
-    });
+      });
+      
     
 
 
-    app.post('/admin/travel', (req, res) => {
+      app.post('/admin/travel',verifyAdminToken, (req, res) => {
         console.log(req.body);
-        const { source, destination, fare, duration, departure, arrival, date_of_travel,bus_id } = req.body;
-        
-        connection.query(
-            'INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel,bus_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [source, destination, fare, duration, departure, arrival, date_of_travel,bus_id],
-            (err, result) => {
+        const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_id } = req.body;
+    
+
+        const checkBusQuery = 'SELECT bus_id FROM busdetail WHERE bus_id = ?';
+        connection.query(checkBusQuery, [bus_id], (err, busResult) => {
+            if (err) {
+                console.error('Database query error:', err);
+                return res.status(500).send('Database query error');
+            }
+    
+            if (busResult.length === 0) {
+                return res.status(404).send("Bus doesn't exist");
+            }
+    
+           
+            const insertTravelQuery = `
+                INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel, bus_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            connection.query(insertTravelQuery, [source, destination, fare, duration, departure, arrival, date_of_travel, bus_id], (err, result) => {
                 if (err) {
-                    console.error(err);
-                    res.status(500).send('Error inserting travel data');    
-                    return;
+                    console.error('Error inserting travel data:', err);
+                    return res.status(500).send('Error inserting travel data');
                 }
                 console.log('Travel Insert successful:', result);
                 res.send('Travel Insert Success');
-            }
-        );
+            });
+        });
     });
-    app.delete('/deletetravel',(req,res)=>{
+    
+      
+    app.delete('/deletetravel',verifyAdminToken,(req,res)=>{
         const {travel_id}=req.query;
         connection.query('DELETE FROM travel WHERE travel_id=?',[travel_id],(err,result)=>{
             if(err){
@@ -314,7 +384,7 @@ app.get('/admindetail',(req,res)=>{
         }
       })
 })
-app.get('/busdetail',(req,res)=>{
+app.get('/busdetail',verifyAdminToken,(req,res)=>{
     connection.query('SELECT * FROM busdetail',(err,result)=>{
       if(err){
           console.log(err);
@@ -324,7 +394,7 @@ app.get('/busdetail',(req,res)=>{
       }
     })
 })  
-app.post('/busadd',(req,res)=>{
+app.post('/busadd',verifyAdminToken,(req,res)=>{
     console.log(req.body)
     const{bus_number,bus_name,contactno,capacity}=req.body
     connection.query('INSERT INTO busdetail(bus_number,bus_name,contactno,capacity) VALUES(?,?,?,?)',[bus_number,bus_name,contactno,capacity],(err,result)=>{
@@ -336,7 +406,7 @@ app.post('/busadd',(req,res)=>{
         }
     })
 })
-app.put('/busupdate', (req, res) => {
+app.put('/busupdate',verifyAdminToken, (req, res) => {
     const { bus_number, bus_name, contactno, capacity } = req.body;
     const sql = 'UPDATE busdetail SET bus_name = ?, contactno = ?, capacity = ? WHERE bus_number = ?';
     
@@ -349,7 +419,7 @@ app.put('/busupdate', (req, res) => {
         res.send('Bus detail updated successfully');
     });
 });
-app.delete('/deletebus',(req,res)=>{
+app.delete('/deletebus',verifyAdminToken,(req,res)=>{
     const{bus_number}=req.query
 connection.query('DELETE FROM busdetail WHERE bus_number=?',[bus_number],(err,result)=>{
     if(err){
@@ -360,7 +430,7 @@ connection.query('DELETE FROM busdetail WHERE bus_number=?',[bus_number],(err,re
 })
 
 })
-app.get('/bookings',(req,res)=>{
+app.get('/bookings',verifyAdminToken,(req,res)=>{
     const query = 'SELECT b.booking_id,b.bus_number, b.seat_no, b.booking_email, b.name, b.age, b.gender, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.id = bd.bus_id'
     connection.query(query,(err,result)=>{
       if(err){
@@ -371,7 +441,7 @@ app.get('/bookings',(req,res)=>{
       }
     })
 })
-app.post('/getbusid', (req, res) => {
+app.post('/getbusid',verifyAdminToken, (req, res) => {
     const { bus_number } = req.body;
     console.log(req.body);
 
@@ -386,7 +456,7 @@ app.post('/getbusid', (req, res) => {
             return res.status(500).json({ error: 'Database query error' });
         }
 
-        // Check if bus_id is found
+       
         if (results.length > 0) {
             const bus_id = results[0].bus_id; 
             return res.status(200).json({ result: { bus_id } });    
@@ -397,7 +467,7 @@ app.post('/getbusid', (req, res) => {
 });
 
 
-app.get('/totaloperators',(req,res)=>{
+app.get('/totaloperators',verifyAdminToken,(req,res)=>{
     connection.query('SELECT COUNT(*) AS totaloperator FROM busdetail',(err,result)=>{
         if(err){
             console.log(err);

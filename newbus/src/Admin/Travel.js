@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Admincss/Travel.css';
 
 export default function Travel() {
@@ -14,6 +15,9 @@ export default function Travel() {
     date_of_travel: '',
     bus_number: ''
   });
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTravelDetails();
@@ -21,9 +25,18 @@ export default function Travel() {
 
   const fetchTravelDetails = async () => {
     try {
-      const res = await fetch('http://localhost:8000/traveldetail');
+      const res = await fetch('http://localhost:8000/traveldetail', {
+        credentials: 'include'
+      });
+
+      if (res.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+
       const data = await res.json();
       setTravelDetails(data.result);
+      console.log(data);
     } catch (err) {
       console.error('Error fetching travel details:', err);
     }
@@ -37,71 +50,102 @@ export default function Travel() {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-       
-        const response = await fetch('http://localhost:8000/getbusid', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bus_number: formData.bus_number })
+      const response = await fetch('http://localhost:8000/getbusid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bus_number: formData.bus_number }),
+        credentials: 'include'
+      });
+
+      if (response.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        const bus_id = data.result.bus_id;
+
+        const travelData = { ...formData, bus_id };
+
+        await fetch('http://localhost:8000/admin/travel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(travelData),
+          credentials: 'include'
         });
 
-        if (response.ok) {
-            const data = await response.json();
-            const bus_id = data.result.bus_id;
-
-       
-            const travelData = { ...formData, bus_id };
-
-   
-            await fetch('http://localhost:8000/admin/travel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(travelData)
-            });
-
-            fetchTravelDetails();
-            setFormData({
-                source: '',
-                destination: '',
-                fare: '',
-                duration: '',
-                departure: '',
-                arrival: '',
-                date_of_travel: '',
-                bus_number: ''
-            });
-            alert('Travel Added Successfully');
-        } else {
-      
-            alert('Bus not found');
-        }
+        fetchTravelDetails();
+        setFormData({
+          source: '',
+          destination: '',
+          fare: '',
+          duration: '',
+          departure: '',
+          arrival: '',
+          date_of_travel: '',
+          bus_number: ''
+        });
+        alert('Travel Added Successfully');
+      } else {
+        alert('Bus not found');
+      }
     } catch (err) {
-        console.error('Error adding travel detail:', err);
+      console.error('Error adding travel detail:', err);
     }
-};
-
+  };
 
   const handleUpdate = async (travel_id) => {
     try {
-      const response = await fetch(`http://localhost:8000/travelupdate?travel_id=${travel_id}`, {
-        method: 'PUT',
+      const response = await fetch('http://localhost:8000/getbusid', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ bus_number: formData.bus_number }),
+        credentials: 'include'
       });
-      if (response.ok) {
-        alert('Travel Updated Successfully');
+
+      if (response.status === 401) {
+        setUnauthorized(true);
+        return;
       }
-      setEditingTravelId(null);
-      fetchTravelDetails();
-      setFormData({
-        source: '',
-        destination: '',
-        fare: '',
-        duration: '',
-        departure: '',
-        arrival: '',
-        date_of_travel: '',
-        bus_number: ''
-      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const bus_id = data.result.bus_id;
+
+        const travelData = { ...formData, bus_id };
+
+        const updateResponse = await fetch(`http://localhost:8000/travelupdate?travel_id=${travel_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(travelData),
+          credentials: 'include'
+        });
+
+        if (updateResponse.status === 401) {
+          setUnauthorized(true);
+          return;
+        }
+
+        if (updateResponse.ok) {
+          alert('Travel Updated Successfully');
+        }
+
+        setEditingTravelId(null);
+        fetchTravelDetails();
+        setFormData({
+          source: '',
+          destination: '',
+          fare: '',
+          duration: '',
+          departure: '',
+          arrival: '',
+          date_of_travel: '',
+          bus_number: ''
+        });
+      } else {
+        alert('Bus not found');
+      }
     } catch (err) {
       console.error('Error updating travel detail:', err);
     }
@@ -115,8 +159,15 @@ export default function Travel() {
   const handleDelete = async (travel_id) => {
     try {
       const response = await fetch(`http://localhost:8000/deletetravel?travel_id=${travel_id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
+
+      if (response.status === 401) {
+        setUnauthorized(true);
+        return;
+      }
+
       if (response.ok) {
         alert('Travel Deleted Successfully');
       }
@@ -125,6 +176,16 @@ export default function Travel() {
       console.error('Error deleting travel detail:', err);
     }
   };
+
+  if (unauthorized) {
+    return (
+      <div className="unauthorized-container">
+        <h1>Unauthorized</h1>
+        <p>You are not authorized to view this page. Please log in.</p>
+        <button onClick={() => navigate('/adminlogin')}>Login</button>
+      </div>
+    );
+  }
 
   return (
     <div className="travel-detail-container">

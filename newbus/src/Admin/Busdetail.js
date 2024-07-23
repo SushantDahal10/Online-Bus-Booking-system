@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import './Admincss/Busdetail.css'; // Ensure you create this CSS file for styling
+import { useNavigate } from 'react-router-dom';
+import './Admincss/Busdetail.css'; 
 
 export default function BusDetail() {
     const [busDetails, setBusDetails] = useState([]);
@@ -10,6 +11,9 @@ export default function BusDetail() {
         contactno: '',
         capacity: ''
     });
+    const [unauthorized, setUnauthorized] = useState(false);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchBusDetails();
@@ -17,7 +21,15 @@ export default function BusDetail() {
 
     const fetchBusDetails = async () => {
         try {
-            const res = await fetch('http://localhost:8000/busdetail');
+            const res = await fetch('http://localhost:8000/busdetail', {
+                credentials: 'include'
+            });
+
+            if (res.status === 401) {
+                setUnauthorized(true);
+                return;
+            }
+
             const data = await res.json();
             setBusDetails(data.result);
         } catch (err) {
@@ -36,8 +48,15 @@ export default function BusDetail() {
             const response = await fetch('http://localhost:8000/busadd', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: 'include'
             });
+
+            if (response.status === 401) {
+                setUnauthorized(true);
+                return;
+            }
+
             if (response.ok) {
                 alert('Bus Added Successfully');
             }
@@ -53,8 +72,15 @@ export default function BusDetail() {
             const response = await fetch(`http://localhost:8000/busupdate?bus_number=${bus_number}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: 'include'
             });
+
+            if (response.status === 401) {
+                setUnauthorized(true);
+                return;
+            }
+
             if (response.ok) {
                 alert('Bus Updated Successfully');
             }
@@ -74,8 +100,15 @@ export default function BusDetail() {
     const handleDelete = async (bus_number) => {
         try {
             const response = await fetch(`http://localhost:8000/deletebus?bus_number=${bus_number}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: 'include'
             });
+
+            if (response.status === 401) {
+                setUnauthorized(true);
+                return;
+            }
+
             if (response.ok) {
                 alert('Bus Deleted Successfully');
             }
@@ -84,6 +117,16 @@ export default function BusDetail() {
             console.error('Error deleting bus detail:', err);
         }
     };
+
+    if (unauthorized) {
+        return (
+            <div className="unauthorized-container">
+                <h1>Unauthorized</h1>
+                <p>You are not authorized to view this page. Please log in.</p>
+                <button onClick={() => navigate('/adminlogin')}>Login</button>
+            </div>
+        );
+    }
 
     return (
         <div className="bus-detail-container">

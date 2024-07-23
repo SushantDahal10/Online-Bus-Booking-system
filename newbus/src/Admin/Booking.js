@@ -1,22 +1,44 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Admincss/Booking.css';
 
 export default function Booking() {
     const [bookings, setBookings] = useState([]);
+    const [unauthorized, setUnauthorized] = useState(false);
+    
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const res = await fetch('http://localhost:8000/bookings');
+                const res = await fetch('http://localhost:8000/bookings', {
+                    credentials: 'include'
+                });
+
+                if (res.status === 401) {
+                    setUnauthorized(true);
+                    return;
+                }
+
                 const data = await res.json();
                 setBookings(data.result);
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching bookings:', err);
             }
         };
 
         fetchBookings();
     }, []);
+
+    if (unauthorized) {
+        return (
+            <div className="unauthorized-container">
+                <h1>Unauthorized</h1>
+                <p>You are not authorized to view this page. Please log in.</p>
+                <button onClick={() => navigate('/login')}>Login</button>
+            </div>
+        );
+    }
 
     return (
         <div className="booking-container">
