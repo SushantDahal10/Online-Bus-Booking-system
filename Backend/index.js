@@ -63,7 +63,9 @@ let temporarydata={};
         });
     };
     
-      
+    app.get('/tokencheck', authenticate, (req, res) => {
+        res.status(200).json({ message: 'Token is valid', email: req.email });
+    });
       app.post('/adminlogin', (req, res) => {
         const { email, password } = req.body;
       
@@ -361,7 +363,7 @@ connection.query(query,[travel_id],(err,result)=>{
 
 
         connection.query(
-            'SELECT t.* ,b.bus_name,b.bus_number FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? OR t.date_of_travel=?',
+            'SELECT t.* ,b.bus_name,b.bus_number FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? AND t.date_of_travel=?',
             [from, to, date],
             (err, result) => {
                 if (err) {

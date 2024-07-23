@@ -11,7 +11,27 @@ export default function Payment(props) {
   const navigate = useNavigate();
 
   const makePayment = () => {
-    navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}`);
+    const checkToken = async () => {
+      try {
+          const response = await fetch('http://localhost:8000/tokencheck', {
+              method: 'GET',
+              credentials: 'include'
+          });
+         if(response.ok){
+          navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}`);
+         }
+         else{
+          alert('Please login first')
+          navigate('/login')
+         }
+      } catch (error) {
+          console.error('Error:', error);
+      }
+  };
+  
+  checkToken();
+  
+
   }
 
   return (
@@ -50,7 +70,7 @@ export default function Payment(props) {
           </div>
         </div>
 
-        {/* Fare Details */}
+  
         <div className="section">
           <h3 className="section-title">Fare Details</h3>
           <div className="fare-details">

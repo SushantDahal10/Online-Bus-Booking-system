@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Page, Text, View, Image, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import '../CSS/Ticket.css';
 import Footer from './Footer';
 import Navbar from './Navbar';
@@ -86,7 +87,7 @@ const StyledTicketPDF = ({ ticketGroup }) => (
         <Image style={styles.logo} src="/path/to/logo.png" />
         <Text>Date: {new Date().toLocaleDateString()}</Text>
       </View>
-      <Text style={styles.title}>{ticketGroup.source} ➔ {ticketGroup.destination}</Text>
+      <Text style={styles.title}>{ticketGroup.source} {'TO'} {ticketGroup.destination}</Text>
       <Text style={styles.text}>Date: {ticketGroup.date_of_travel}</Text>
 
       <View style={styles.section}>
@@ -153,6 +154,7 @@ const StyledTicketPDF = ({ ticketGroup }) => (
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([]);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -189,10 +191,14 @@ export default function Tickets() {
       <Navbar />
       <div className="tickets-container">
         <h1 className="tickets-header">Your Bus Tickets</h1>
+
+      
+
         {Object.keys(groupedTickets).map(key => {
           const ticketGroup = groupedTickets[key];
           return (
             <div className="ticket-item" key={key}>
+              <div className='bookingdate'>Booking date:{new Date().toLocaleDateString()}</div>
               <div className="ticket-header">
                 <h2>{ticketGroup.bus_name} (Bus Number: {ticketGroup.bus_number})</h2>
                 <p><strong>From:</strong> {ticketGroup.source}</p>
@@ -237,6 +243,9 @@ export default function Tickets() {
             </div>
           );
         })}
+        <button onClick={() => navigate('/')} className="back-to-home">
+          Go Back to Home Page
+        </button>
       </div>
       <Footer />
     </>

@@ -56,19 +56,19 @@ export default function Signup() {
             
             <div className="signup-form-container">
                 <form className="signup-form" method='post' onSubmit={handlesubmit}>
-                    <div className="input-group">
+                    <div className="input-group1">
                       
                         <input type="email" name="email" id="email" placeholder="name@company.com" required />
                     </div>
-                    <div className="input-group">
+                    <div className="input-group1">
                        
                         <input type="password" name="password" id="password" placeholder="Password" required />
                     </div>
-                    <div className="input-group">
+                    <div className="input-group1">
                        
                         <input type="password" name="confirm-password" id="confirm-password" placeholder="Re-enter password" required />
                     </div>
-                    <button type="submit" className="submit-button">Create an account</button>
+                    <button type="submit" className="submit-button1">Create an account</button>
                     <div className="signup-option">
                         <p>Already have an account? <a href="/login">Login here</a></p>
                     </div>

@@ -47,10 +47,7 @@ drop table travel;
 select * from travel;
 drop table travel;
 truncate table travel;
-INSERT INTO travel (source, destination, fare, duration, departure, arrival, bus_id, date_of_travel) VALUES
-('Kathmandu', 'Biratnagar', 1600, '3 hour', '05:00', '07:00', 1, '25522-07-14');
-INSERT INTO travel (source, destination, fare, duration, departure, arrival, bus_id, date_of_travel) VALUES
-('Kathmandu', 'Biratnagar', 1600, '3 hour', '05:00', '07:00', 2, '25522-07-14');
+
 
 create table booking(
 booking_id int  not null  auto_increment,

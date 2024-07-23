@@ -31,7 +31,7 @@ console.log(obj)
         if (response.ok) {
           console.log('Passenger details saved successfully');
           setTimeout(() => {
-            navigate('/yourticket');
+            navigate('/');
           }, 5000);
         } else {
           alert('Failed to save passenger details');
@@ -49,7 +49,7 @@ console.log(obj)
       <h1>Success</h1>
       <p>Your booking details have been successfully saved.</p>
       <p>You will be redirected to the home page shortly...</p>
-      <p className="text-2xl font-bold underline">Your ticket is sent to your respected Email</p>
+      <p className="text-2xl font-bold underline">You can download your ticket from website</p>
     </div>
   );
 }

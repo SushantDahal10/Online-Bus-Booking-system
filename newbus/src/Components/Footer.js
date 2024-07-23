@@ -11,7 +11,7 @@ export default function Footer() {
                 <div className="footer-logo-section">
                     <LuBus className="footer-logo" />
                     <p>
-                        New Bus is the online bus ticket booking service, trusted by millions of happy customers globally. New Bus offers bus ticket booking through its website, iOS, and Android mobile apps for all major routes.
+                        New Bus is the online bus ticket booking service, trusted by customers globally. New Bus offers bus ticket booking through its website  for all major routes.
                     </p>
                 </div>
                 <div className="footer-links-section">

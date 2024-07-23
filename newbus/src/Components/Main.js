@@ -73,6 +73,7 @@ export default function Main() {
                             onChange={handlechange}
                             onFocus={handlefocusfrom}
                             onBlur={handleblurfrom}
+                            required
                         />
                         {focusfrom && filtered.length > 0 && (
                             <ul className="dropdown">
@@ -98,6 +99,7 @@ export default function Main() {
                             onChange={handlechangeto}
                             onFocus={handlefocusto}
                             onBlur={handleblurto}
+                            required
                         />
                         {focusto && filteredd.length > 0 && (
                             <ul className="dropdown">
@@ -115,7 +117,7 @@ export default function Main() {
                     </div>
                     <div className='input-group'>
                         <BsCalendar3 className='icon' />
-                        <input type="text" id='date' className='input-field' placeholder='Date' />
+                        <input type="text" id='date' className='input-field' placeholder='Date' required />
                     </div>
                     <button type='submit' className='submit-button'>Search</button>
                 </form>

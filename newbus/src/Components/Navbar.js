@@ -74,11 +74,13 @@ export default function Navbar() {
                 <>
                   <div onClick={() => navigate('/login')}>Sign In</div>
                   <div onClick={() => navigate('/signup')}>Sign Up</div>
+                  <div onClick={() => navigate('/')}>Home</div>
                 </>
               ) : (
                 <>
                   <div onClick={handleSignout}>Sign Out</div>
                   <div onClick={() => navigate('/yourticket')}>Tickets</div>
+                  <div onClick={() => navigate('/')}>Home</div> 
                 </>
               )}
             </div>

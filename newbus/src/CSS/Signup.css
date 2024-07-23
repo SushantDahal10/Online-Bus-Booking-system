@@ -16,13 +16,13 @@
     margin-bottom: 1.5rem;
 }
 
-.logo {
+.logo1 {
     font-size: 3rem;
     color: #007bff; /* Blue color */
     transition: color 0.3s ease;
 }
 
-.logo:hover {
+.logo1:hover {
     color: #0056b3; /* Darker blue on hover */
 }
 
@@ -49,11 +49,11 @@
 }
 
 /* Form input styles */
-.input-group {
+.input-group1 {
     margin-bottom: 1rem;
 }
 
-.input-group label {
+.input-group1 label {
     display: block;
     font-size: 0.875rem;
     color: #555; /* Medium gray */
@@ -61,7 +61,7 @@
     transition: color 0.3s ease;
 }
 
-.input-group input {
+.input-group1 input {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ccc; /* Light gray border */
@@ -71,13 +71,13 @@
     transition: border-color 0.3s ease;
 }
 
-.input-group input:focus {
+.input-group1 input:focus {
     border-color: #007bff; /* Blue border on focus */
     outline: none;
 }
 
 /* Button styles */
-.submit-button {
+.submit-button1 {
     width: 100%;
     background-color: #007bff; /* Blue color */
     color: #ffffff;
@@ -89,7 +89,7 @@
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.submit-button:hover {
+.submit-button1:hover {
     background-color: #0056b3; /* Darker blue */
     transform: translateY(-2px);
 }
@@ -113,5 +113,5 @@
 }
 
 .signup-option a:hover {
-    color: #0056b3; /* Darker blue */
+    color: #0056b3; 
 }
