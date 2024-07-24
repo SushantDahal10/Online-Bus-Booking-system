@@ -6,20 +6,34 @@ import Booking from './Booking';
 import BusDetail from './Busdetail';
 import TravelDetail from './Travel';
 import { useNavigate } from 'react-router-dom';
+
 export default function Main() {
-  const [bus, setBus] = useState(false);
-  const [travel, setTravel] = useState(false);
-  const [dashboard, setDashboard] = useState(true);
-  const [booking, setBooking] = useState(false);
+  const [section, setSection] = useState('dashboard');
   const [totalBus, setTotalBus] = useState();
   const [dashboardData, setDashboardData] = useState({});
   const [unauthorized, setUnauthorized] = useState(false);
-const navigate=useNavigate()
-  const handleSectionChange = (section) => {
-    setDashboard(section === 'dashboard');
-    setBus(section === 'bus');
-    setTravel(section === 'travel');
-    setBooking(section === 'booking');
+  
+  const navigate = useNavigate();
+
+  const handleSectionChange = (newSection) => {
+    setSection(newSection);
+    switch (newSection) {
+      case 'dashboard':
+        navigate('/admin');
+        break;
+      case 'travel':
+        navigate('/admin/travel');
+        break;
+      case 'bus':
+        navigate('/admin/bus');
+        break;
+      case 'booking':
+        navigate('/admin/booking');
+        break;
+      default:
+        navigate('/admin');
+        break;
+    }
   };
 
   useEffect(() => {
@@ -57,13 +71,14 @@ const navigate=useNavigate()
   }, []);
 
   if (unauthorized) {
-    return (<>
-      <Navbar handleSectionChange={handleSectionChange} />
-      <div className="unauthorized-container">
-        <h1>Unauthorized</h1>
-        <p>You are not authorized to view this page. Please log in.</p>
-        <button onClick={() => navigate('/adminlogin')}>Login</button>
-      </div>
+    return (
+      <>
+        <Navbar handleSectionChange={handleSectionChange} />
+        <div className="unauthorized-container">
+          <h1>Unauthorized</h1>
+          <p>You are not authorized to view this page. Please log in.</p>
+          <button onClick={() => navigate('/adminlogin')}>Login</button>
+        </div>
       </>
     );
   }
@@ -72,16 +87,16 @@ const navigate=useNavigate()
     <div>
       <Navbar handleSectionChange={handleSectionChange} />
       <div className="content">
-        {dashboard && (
+        {section === 'dashboard' && (
           <Dashboard
             bookingCount={dashboardData.bookingcount}
             totalRevenue={dashboardData.totalrevenue}
             totalBus={totalBus}
           />
         )}
-        {bus && <BusDetail />}
-        {travel && <TravelDetail />}
-        {booking && <Booking />}
+        {section === 'bus' && <BusDetail />}
+        {section === 'travel' && <TravelDetail />}
+        {section === 'booking' && <Booking />}
       </div>
     </div>
   );

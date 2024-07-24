@@ -1,9 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Admincss/Dashboard.css';
-
+import Navbar from './Navbar';
 const Dashboard = ({ bookingCount, totalRevenue, totalBus }) => {
+  
+  const navigate = useNavigate();
+
+  const handleSectionChange = (newSection) => {
+    navigate(`/admin/${newSection}`);
+  };
   return (
     <div className="dashboard">
+         <Navbar handleSectionChange={handleSectionChange} />
       <h1>Dashboard</h1>
       <div className="cards">
         <div className="card red">

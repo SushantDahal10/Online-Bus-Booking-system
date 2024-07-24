@@ -14,6 +14,7 @@ export default function Viewseat() {
   const dispatch = useDispatch();
   const params = new URLSearchParams(window.location.search);
   const [occupied, setOccupied] = useState([]);
+  const [loading, setLoading] = useState(true); 
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
 
   const detaiofpayment = {
@@ -53,6 +54,8 @@ export default function Viewseat() {
         }
       } catch (e) {
         console.log(e);
+      } finally {
+        setLoading(false); 
       }
     };
 
@@ -73,6 +76,12 @@ export default function Viewseat() {
 
   const isSelected = (seatId) => selectedSeats.includes(seatId);
   const isOccupied = (seatId) => occupied.includes(seatId);
+
+  if (loading) {
+    return (
+      <div className="container-fluid loading-container">Loading...</div>
+    );
+  }
 
   return (
     <div>

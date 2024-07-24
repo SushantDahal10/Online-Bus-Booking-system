@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/Busdetail.css'; 
-
+import Navbar from './Navbar';
 export default function BusDetail() {
     const [busDetails, setBusDetails] = useState([]);
     const [editingBusNumber, setEditingBusNumber] = useState(null);
@@ -127,9 +127,12 @@ export default function BusDetail() {
             </div>
         );
     }
-
+    const handleSectionChange = (newSection) => {
+        navigate(`/admin/${newSection}`);
+      };
     return (
         <div className="bus-detail-container">
+            <Navbar handleSectionChange={handleSectionChange} />
             <h1>Bus Details</h1>
             <form onSubmit={handleAdd}>
                 <input

@@ -1,14 +1,14 @@
-  /* Container for the entire view seat page */
-  .contain {
+/* Container for the entire view seat page */
+.admin-container {
     background-color: #f0f0f0; /* Light grey background for the container */
     height: 90vh;
     width: 100vw;
     margin-bottom: 18vw;
     overflow: hidden;
   }
-
+  
   /* Styles for the bus seat layout */
-  .busseat {
+  .admin-busseat {
     background-color: #ffffff; /* White background for the bus seat area */
     position: absolute;
     top: 15%;
@@ -20,90 +20,90 @@
     grid-template-columns: 3fr auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
   }
-
+  
   /* Styling for the driver section */
-  .driver {
+  .admin-driver {
     position: absolute;
     top: 15px;
     left: 15px;
     font-size: 30px;
     color: #333; /* Dark color for better visibility */
   }
-
+  
   /* Styling for the customer seats layout */
-  .customerseats {
+  .admin-customerseats {
     margin-left: 4rem;
     margin-bottom: 20px;
     width: 560.4px;
     height: 35vh;
-  /* Matching border color */
+    /* Matching border color */
     display: flex;
     flex-direction: column;
     gap: 10%;
   }
-
+  
   /* Styling for left and right seat sections */
-  .leftseat, .rightseat {
+  .admin-leftseat, .admin-rightseat {
     width: 525px;
     height: 35%;
     display: grid;
     grid-template-columns: repeat(11, 1fr);
     margin-left: 1rem;
   }
-
+  
   /* Styling for seat columns */
-  .onecol {
+  .admin-onecol {
     height: 80%;
     margin-top: 0.5rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
   }
-
+  
   /* Seat position (window and non-window) */
-  .window, .non-window {
+  .admin-window, .admin-non-window {
     font-size: 30px;
     width: 50px;
     transform: scaleX(-1);
   }
-
+  
   /* Styling for the available, occupied, and unselected indicators */
-  .availableindex {
+  .admin-availableindex {
     display: flex;
     justify-content: space-between;
     margin-left: 30px;
     gap: 70px;
   }
-
-  .available {
-    background-color: #9e9e9e; /* Green for available */
+  
+  .admin-available {
+    background-color:#9e9e9e; /* Green for available */
     height: 4vh;
     width: 2vw;
     border-radius: 4px; /* Rounded corners */
   }
-
-  .occupied {
+  
+  .admin-occupied {
     height: 4vh;
     width: 2vw;
     background-color: #f44336; /* Red for occupied */
     border-radius: 4px; /* Rounded corners */
     margin-left: 10px;
   }
-
-  .avab {
+  
+  .admin-avab {
     margin-left: 40px;
     margin-top: 6px;
   }
-
+  
   /* Styling for the price box */
-  .pricebox {
+  .admin-pricebox {
     margin-left: 70vw;
     position: relative;
     top: -50px;
   }
-
+  
   /* Styling for the back button */
-  .back {
+  .admin-back {
     display: flex;
     gap: 10px;
     /* position: relative;
@@ -120,37 +120,38 @@
     cursor: pointer;
     z-index: 25;
   }
-  .backbtn {
+  
+  .admin-backbtn {
     font-size: 24px;
     margin-right: 10px;
   }
-
-  .back:hover {
+  
+  .admin-back:hover {
     background-color: #e64a19; /* Darker shade on hover */
   }
-
-  .backbtn {
+  
+  .admin-backbtn {
     font-size: 40px;
   }
-
-  .backval {
+  
+  .admin-backval {
     font-size: 30px;
   }
-
+  
   /* Seat color styles */
-  .selected-seat {
+  .admin-selected-seat {
     color: #2196f3; /* Blue for selected seats */
   }
-
-  .unselected-seat {
+  
+  .admin-unselected-seat {
     color: #9e9e9e; /* Grey for unselected seats */
   }
-
-  .occupied-seat {
-    color:#f44336; /* Dark grey for occupied seats */
+  
+  .admin-occupied-seat {
+    color: #f44336; /* Dark grey for occupied seats */
   }
-
-  .container-fluid.loading-container {
+  
+  .admin-loading-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -158,29 +159,31 @@
     font-size: 1.5em;
     color: #555;
   }
+  
   @media (max-width: 768px) {
-    .customerseats {
-        flex-direction: column;
-        align-items: center;
+    .admin-customerseats {
+      flex-direction: column;
+      align-items: center;
     }
-
-    .leftseat, .rightseat {
-        width: 100%;
+  
+    .admin-leftseat, .admin-rightseat {
+      width: 100%;
     }
-
-    .onecol {
-        flex-direction: column;
-        align-items: center;
+  
+    .admin-onecol {
+      flex-direction: column;
+      align-items: center;
     }
-
-    .pricebox {
-        width: 100%;
-        align-items: center;
+  
+    .admin-pricebox {
+      width: 100%;
+      align-items: center;
     }
-
-    .back {
-        width: 100%;
-        justify-content: center;
-        font-size: 0.9rem;
+  
+    .admin-back {
+      width: 100%;
+      justify-content: center;
+      font-size: 0.9rem;
     }
   }
+  

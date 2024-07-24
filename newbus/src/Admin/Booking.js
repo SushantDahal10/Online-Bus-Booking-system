@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/Booking.css';
-
+import Navbar from './Navbar';
 export default function Booking() {
     const [bookings, setBookings] = useState([]);
     const [unauthorized, setUnauthorized] = useState(false);
@@ -39,9 +39,12 @@ export default function Booking() {
             </div>
         );
     }
-
+    const handleSectionChange = (newSection) => {
+        navigate(`/admin/${newSection}`);
+      };
     return (
         <div className="booking-container">
+             <Navbar handleSectionChange={handleSectionChange} />
             <h1>Bookings</h1>
             <table className="booking-table">
                 <thead>
@@ -76,7 +79,7 @@ export default function Booking() {
                             <td>{booking.source}</td>
                             <td>{booking.destination}</td>
                             <td>{booking.fare}</td>
-                            <td>{booking.date_of_travel}</td>
+                            <td>{booking.date_of_travel.split('T')[0]}</td>
                             <td>{booking.bus_number}</td>
                             <td>{booking.bus_name}</td>
                         </tr>
