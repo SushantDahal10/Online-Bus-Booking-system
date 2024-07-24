@@ -84,11 +84,11 @@ const StyledTicketPDF = ({ ticketGroup }) => (
   <Document>
     <Page style={styles.page}>
       <View style={styles.header}>
-        <Image style={styles.logo} src="/path/to/logo.png" />
+        <Image style={styles.logo} src="./" />
         <Text>Date: {new Date().toLocaleDateString()}</Text>
       </View>
       <Text style={styles.title}>{ticketGroup.source} {'TO'} {ticketGroup.destination}</Text>
-      <Text style={styles.text}>Date: {ticketGroup.date_of_travel}</Text>
+      <Text style={styles.text}>Date: {ticketGroup.date_of_travel.split('T')[0]}</Text>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Bus Details</Text>
@@ -205,7 +205,7 @@ export default function Tickets() {
                 <p><strong>To:</strong> {ticketGroup.destination}</p>
               </div>
               <div className="ticket-info">
-                <p><strong>Date:</strong> {ticketGroup.date_of_travel}</p>
+                <p><strong>Date:</strong> {ticketGroup.date_of_travel.split('T')[0]}</p>
                 <p><strong>Departure:</strong> {ticketGroup.departure}</p>
                 <p><strong>Arrival:</strong> {ticketGroup.arrival}</p>
               </div>

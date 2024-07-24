@@ -53,11 +53,33 @@
     font-size: 1.5rem;
     color: #3498db;
 }
+.swap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #3498db;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    width: 30px; /* Increased size for better visibility */
+    height: 30px; /* Increased size for better visibility */
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transform: rotate(90deg);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    position: absolute;
+    top: 85px;
+}
 
+.swap:hover {
+    background-color: #3498db;
+    color: #ffffff;
+}
 /* Input field styling */
 .input-field {
     width: 100%;
-    padding: 15px 15px 15px 45px; 
+    padding: 0px;
     border: 2px solid #e1e4e8;
     border-radius: 8px;
     font-size: 1rem;
@@ -67,6 +89,8 @@
 
 .input-field::placeholder {
     color: #888;
+    position: relative;
+    left: -7px;
 
 }
 

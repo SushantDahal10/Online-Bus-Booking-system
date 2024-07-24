@@ -118,8 +118,8 @@ let temporarydata={};
         const { travel_id } = req.query;
         const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_number } = req.body;
       
-        // First, check if the bus number exists in the busdetail table
-        const checkBusQuery = 'SELECT bus_id FROM busdetail WHERE bus_number = ?';
+       
+        const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_number = ?';
         connection.query(checkBusQuery, [bus_number], (err, busResult) => {
           if (err) {
             return res.status(500).json({ error: 'Database query error' });
@@ -130,14 +130,15 @@ let temporarydata={};
           }
       
           const bus_id = busResult[0].bus_id;
+          const capacity=busResult[0].capacity
       
           const updateTravelQuery = `
             UPDATE travel 
-            SET source = ?, destination = ?, departure = ?, arrival = ?, fare = ?, duration = ?, bus_id = ?, date_of_travel = ?
+            SET source = ?, destination = ?, departure = ?, arrival = ?, fare = ?, duration = ?, bus_id = ?, date_of_travel = ?,seats_available=?
             WHERE travel_id = ?
           `;
       
-          connection.query(updateTravelQuery, [source, destination, departure, arrival, fare, duration, bus_id, date_of_travel, travel_id], (err, result) => {
+          connection.query(updateTravelQuery, [source, destination, departure, arrival, fare, duration, bus_id, date_of_travel, travel_id,capacity], (err, result) => {
             if (err) {
               return res.status(500).json({ error: 'Database query error' });
             }
@@ -159,7 +160,7 @@ let temporarydata={};
         const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_id } = req.body;
     
 
-        const checkBusQuery = 'SELECT bus_id FROM busdetail WHERE bus_id = ?';
+        const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_id = ?';
         connection.query(checkBusQuery, [bus_id], (err, busResult) => {
             if (err) {
                 console.error('Database query error:', err);
@@ -169,13 +170,13 @@ let temporarydata={};
             if (busResult.length === 0) {
                 return res.status(404).send("Bus doesn't exist");
             }
-    
+          const capacity=busResult[0].capacity;
            
             const insertTravelQuery = `
-                INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel, bus_id) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel, bus_id,seats_available) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
             `;
-            connection.query(insertTravelQuery, [source, destination, fare, duration, departure, arrival, date_of_travel, bus_id], (err, result) => {
+            connection.query(insertTravelQuery, [source, destination, fare, duration, departure, arrival, date_of_travel, bus_id,capacity], (err, result) => {
                 if (err) {
                     console.error('Error inserting travel data:', err);
                     return res.status(500).send('Error inserting travel data');
@@ -278,68 +279,89 @@ let temporarydata={};
    
     app.post('/savepassengerdetails', (req, res) => {
         console.log(req.body); // Log the request body to debug
-    
-        const { travel_id, passenger, contactDetails,price } = req.body;
-        const token = req.cookies.token;
-    
-        jwt.verify(token, 'rams', (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-            const { email } = decoded;
-    
-            let hasError = false;
-            let processedCount = 0;
-    
-            passenger.forEach((value) => {
-                const query = 'SELECT * FROM booking WHERE travel_id = ? AND seat_no = ?';
-                const values = [travel_id, value.seatnumber];
-    
-                connection.query(query, values, (err, result) => {
-                    if (err) {
-                        console.error('Error checking passenger details:', err);
-                        hasError = true;
-                        return;
-                    }
-    
-                    if (result.length === 0) {
-                        const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no,price) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)';
-                        const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone,price];
-    
-                        connection.query(insertQuery, insertValues, (err, insertResult) => {
-                            if (err) {
-                                console.error('Error inserting passenger details:', err);
-                                hasError = true;
-                                return;
-                            }
-                            console.log('Passenger details saved:', insertResult);
-                            processedCount++;
-    
-                            if (processedCount === passenger.length) {
-                                if (hasError) {
-                                    res.status(500).json({ message: 'Error saving some passenger details' });
-                                } else {
-                                    res.status(200).json({ message: 'Passenger details saved successfully' });
-                                }
-                            }
-                        });
-                    } else {
-                        console.log('Passenger details already exist:', result);
-                        processedCount++;
-    
-                        if (processedCount === passenger.length) {
-                            if (hasError) {
-                                res.status(500).json({ message: 'Error saving some passenger details' });
-                            } else {
-                                res.status(200).json({ message: 'Passenger details saved successfully' });
-                            }
-                        }
-                    }
-                });
-            });
-        });
-    });
       
+        const { travel_id, passenger, contactDetails, price } = req.body;
+        const token = req.cookies.token;
+      
+        jwt.verify(token, 'rams', (err, decoded) => {
+          if (err) {
+            return res.status(401).json({ message: 'Unauthorized' });
+          }
+          const { email } = decoded;
+      
+          let hasError = false;
+          let processedCount = 0;
+      
+          
+          connection.query('SELECT seats_available FROM travel WHERE travel_id = ?', [travel_id], (err, rows) => {
+            if (err) {
+              console.error('Error fetching seats_available:', err);
+              return res.status(500).json({ message: 'Error fetching travel details' });
+            }
+            const seat = rows[0].seats_available;
+      
+           
+            passenger.forEach((value) => {
+              const query = 'SELECT * FROM booking WHERE travel_id = ? AND seat_no = ?';
+              const values = [travel_id, value.seatnumber];
+      
+              connection.query(query, values, (err, result) => {
+                if (err) {
+                  console.error('Error checking passenger details:', err);
+                  hasError = true;
+                  return;
+                }
+      
+                if (result.length === 0) {
+                  const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                  const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone, price];
+      
+                  connection.query(insertQuery, insertValues, (err) => {
+                    if (err) {
+                      console.error('Error inserting passenger details:', err);
+                      hasError = true;
+                    } else {
+                      console.log('Passenger details saved');
+                    }
+                    processedCount++;
+      
+                    if (processedCount === passenger.length) {
+                      if (hasError) {
+                        return res.status(500).json({ message: 'Error saving some passenger details' });
+                      } else {
+                        
+                        connection.query('UPDATE travel SET seats_available = ? WHERE travel_id = ?', [seat - passenger.length, travel_id], (err) => {
+                          if (err) {
+                            console.error('Error updating seats_available:', err);
+                          } else {
+                            console.log('Seats available updated');
+                          }
+      
+                       
+                          res.status(200).json({ message: 'Passenger details saved successfully' });
+                        });
+                      }
+                    }
+                  });
+                } else {
+                  console.log('Passenger details already exist');
+                  processedCount++;
+      
+                  if (processedCount === passenger.length) {
+                    if (hasError) {
+                      return res.status(500).json({ message: 'Error saving some passenger details' });
+                    } else {
+                      res.status(200).json({ message: 'Passenger details saved successfully' });
+                    }
+                  }
+                }
+              });
+            });
+          });
+        });
+      });
+      
+    
     app.post('/bookingstatus',(req,res)=>{
 const {travel_id}=req.body
 const query = 'SELECT * FROM booking WHERE travel_id=?';
@@ -363,7 +385,7 @@ connection.query(query,[travel_id],(err,result)=>{
 
 
         connection.query(
-            'SELECT t.* ,b.bus_name,b.bus_number FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? AND t.date_of_travel=?',
+            'SELECT t.* ,b.bus_name,b.bus_number,b.capacity FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? AND t.date_of_travel=?',
             [from, to, date],
             (err, result) => {
                 if (err) {
@@ -386,16 +408,26 @@ app.get('/admindetail',(req,res)=>{
         }
       })
 })
-app.get('/busdetail',verifyAdminToken,(req,res)=>{
-    connection.query('SELECT * FROM busdetail',(err,result)=>{
-      if(err){
-          console.log(err);
-      }
-      else{
-          res.status(200).json({result:result});
-      }
+    app.get('/busdetail',verifyAdminToken,(req,res)=>{
+        connection.query('SELECT * FROM busdetail',(err,result)=>{
+        if(err){
+            console.log(err);
+        }
+        else{
+            res.status(200).json({result:result});
+        }
+        })
+    })  
+    app.get('/cities',(req,res)=>{
+        connection.query('select * from cities',(err,result)=>{
+            if(err){
+                console.log(err);
+            }
+            else{
+                res.status(200).json(result);
+            }
+        })
     })
-})  
 app.post('/busadd',verifyAdminToken,(req,res)=>{
     console.log(req.body)
     const{bus_number,bus_name,contactno,capacity}=req.body

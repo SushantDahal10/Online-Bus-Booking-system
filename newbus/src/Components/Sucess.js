@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { pdf } from '@react-pdf/renderer';
 import '../CSS/Success.css';
 import StyledTicketPDF from './Ticketpdf';
-
+import Navbar from './Navbar';
 export default function Success() {
   const navigate = useNavigate();
 
@@ -45,11 +45,14 @@ console.log(obj)
   }, []);
 
   return (
+    <>
+    <Navbar></Navbar>
     <div className="success-container">
       <h1>Success</h1>
       <p>Your booking details have been successfully saved.</p>
       <p>You will be redirected to the home page shortly...</p>
       <p className="text-2xl font-bold underline">You can download your ticket from website</p>
     </div>
+    </>
   );
 }

@@ -1,171 +1,217 @@
-/* Main container for the search results */
-.main-container {
-  padding: 2rem;
-  background-color: #f5f5f5;
-  min-height: 100vh;
+  /* Main container for the search results */
+  .main-container {
+    padding: 2rem;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+  }
+ 
+  /* Header style */
+  .header {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  /* Container for bus data */
+  .data-of-bus {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* Creates six equal-width columns */
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+  }
+
+  /* Styling for each grid item in data-of-bus */
+  .data-of-bus div {
+    font-weight: bold;
+  
+  }
+
+  /* Bus details container */
+  .bus-details {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* Creates six equal-width columns */
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Hover effect for bus-details */
+  .bus-details:hover {
+    background-color: #f0f8ff;
+    transform: translateY(-2px);
+  }
+
+  /* Style for bus name */
+  .bus-name {
+    font-size: 1rem;
+    color: #007bff;
+  }
+
+  /* Style for departure and arrival times */
+  .departure, .arrival {
+    font-size: 0.875rem;
+    color: #555;
+  }
+
+  /* Style for duration */
+  .duration {
+    color: #333;
+  }
+
+  /* Style for fare */
+  .fare {
+    font-weight: bold;
+    color: #e74c3c; /* Red color for fare */
+  }
+
+  /* Button container */
+  .btn {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* View seats button */
+  .view-seat {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Hover effect for view-seat button */
+  .view-seat:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+
+  /* Button for no-results */
+  .btnb {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* No results message */
+  .no-results {
+    text-align: center;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: #555;
+    font-size: 1rem;
+  }
+
+  /* Modify search form styles */
+  .modify-search-form {
+    position: relative;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: red}
+  .modify-search-form h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .input-group {
+    margin-bottom: 1rem;
+  }
+
+  .input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .input-group input::placeholder {
+    font-weight: bold;
+  }
+
+  .modify-search-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+
+  .modify-search-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  .search-criteria {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 20px 0;
+    background-color: #f9f9f9;
 }
 
-/* Header style */
-.header {
-  font-size: 1.75rem;
-  font-weight: bold;
-  color: #333;
-  text-align: center;
-  margin-bottom: 1rem;
+.modify-button {
+    padding: 10px 10px;
+    background-color: #007bff;
+    width: 10vw;
+    height: 7vh;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-/* Container for bus data */
-.data-of-bus {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* Creates six equal-width columns */
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
+.modify-button:hover {
+    background-color: #0056b3;
 }
-
-/* Styling for each grid item in data-of-bus */
-.data-of-bus div {
-  font-weight: bold;
-  text-align: center;
+.datelabel{
+  position: absolute;
+  top: 10px;
 }
-
-/* Bus details container */
-.bus-details {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* Creates six equal-width columns */
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-/* Hover effect for bus-details */
-.bus-details:hover {
-  background-color: #f0f8ff;
-  transform: translateY(-2px);
-}
-
-/* Style for bus name */
-.bus-name {
-  font-size: 1rem;
-  color: #007bff;
-}
-
-/* Style for departure and arrival times */
-.departure, .arrival {
-  font-size: 0.875rem;
-  color: #555;
-}
-
-/* Style for duration */
-.duration {
-  color: #333;
-}
-
-/* Style for fare */
-.fare {
-  font-weight: bold;
-  color: #e74c3c; /* Red color for fare */
-}
-
-/* Button container */
-.btn {
-  display: flex;
-  justify-content: center;
-}
-
-/* View seats button */
-.view-seat {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.arrow{
+  position: relative;
+  top:0.7rem;
+  font-size: 30px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
 }
-
-/* Hover effect for view-seat button */
-.view-seat:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
-}
-
-/* Button for no-results */
-.btnb {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-/* No results message */
-.no-results {
-  text-align: center;
-  padding: 2rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  color: #555;
-  font-size: 1rem;
-}
-
-/* Modify search form styles */
-.modify-search-form {
-  background-color: #fff;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
-}
-
-.modify-search-form h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.input-group {
-  margin-bottom: 1rem;
-}
-
-.input-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.input-group input::placeholder {
-  font-weight: bold;
-}
-
-.modify-search-button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.modify-search-button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+.dateschange{
+  font-family: 15px;
+  position: relative;
+  top:1rem;
+  margin-left: 1rem;
 }

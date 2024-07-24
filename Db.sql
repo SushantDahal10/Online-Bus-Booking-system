@@ -36,34 +36,47 @@ CREATE TABLE travel (
     destination VARCHAR(255) NOT NULL,
     fare FLOAT NOT NULL,
     duration VARCHAR(255) NOT NULL,
-    departure TIME NOT NULL,	
+    departure TIME NOT NULL,
     arrival TIME NOT NULL,
-    bus_id int not null,
-    date_of_travel VARCHAR(255) NOT NULL,
+    bus_id INT NOT NULL,
+    date_of_travel DATE NOT NULL,
+    seats_available INT,
     PRIMARY KEY (travel_id),
-   FOREIGN KEY (bus_id) REFERENCES busdetail(bus_id)
+    FOREIGN KEY (bus_id) REFERENCES busdetail(bus_id) ON DELETE CASCADE
 ) AUTO_INCREMENT = 0;
+
+
+
 drop table travel;
 select * from travel;
 drop table travel;
 truncate table travel;
 
 
-create table booking(
-booking_id int  not null  auto_increment,
-travel_id int  not null,
-seat_no varchar(255) not null,
-booking_email varchar(255),
-send_email varchar(255),
-name varchar(255),
-age int not null,
-gender  varchar(255),
+CREATE TABLE booking (
+    booking_id INT NOT NULL AUTO_INCREMENT,
+    travel_id INT NOT NULL,
+    seat_no VARCHAR(255) NOT NULL,
+    booking_email VARCHAR(255),
+    send_email VARCHAR(255),
+    name VARCHAR(255),
+    age INT NOT NULL,
+    gender VARCHAR(255),
+    phone_no VARCHAR(255), 
+    price INT NOT NULL,
+    PRIMARY KEY (booking_id),
+    UNIQUE(travel_id, seat_no),
+    FOREIGN KEY (travel_id) REFERENCES travel(travel_id) ON DELETE CASCADE
+) AUTO_INCREMENT = 0;
 
-phone_no varchar(255),
-price int not null,
-primary key (booking_id),
-unique(travel_id,seat_no),
-foreign key (travel_id) references travel(travel_id)
-)auto_increment=0;	
 select * from booking;
 drop table booking;
+truncate table booking;
+
+create table cities(
+city_id int not null primary key auto_increment,
+city_name varchar(255) not null
+)auto_increment=0;
+ALTER TABLE cities ADD constraint city_unique UNIQUE(city_name);
+select * from cities;
+

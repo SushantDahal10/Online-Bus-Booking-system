@@ -1,123 +1,157 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../CSS/Mains.css';
-import { TbUserDown, TbUserUp } from "react-icons/tb";
-import { BsCalendar3 } from "react-icons/bs";
-import cities from './cities';
 import { useNavigate } from 'react-router-dom';
+import { RiArrowLeftRightLine } from "react-icons/ri";
 
 export default function Main() {
     const navigate = useNavigate();
-    const [fromcity, setfrom] = useState('');
-    const [tocity, settocity] = useState('');
-    const [date, setdate] = useState('');
-    const [filtered, setfiltered] = useState([]);
-    const [filteredd, setfilteredd] = useState([]);
-    const [focusfrom, setfocusfrom] = useState(false);
-    const [focusto, setfocusto] = useState(false);
+    const [fromCity, setFromCity] = useState('');
+    const [toCity, setToCity] = useState('');
+    const [date, setDate] = useState('');
+    const [filtered, setFiltered] = useState([]);
+    const [filteredTo, setFilteredTo] = useState([]);
+    const [focusFrom, setFocusFrom] = useState(false);
+    const [focusTo, setFocusTo] = useState(false);
+    const [cities, setCities] = useState([]);
 
-    const handlefocusfrom = () => setfocusfrom(true);
-    const handlefocusto = () => setfocusto(true);
-    const handleblurto = () => setfocusto(false);
-    const handleblurfrom = () => setfocusfrom(false);
+    const handleFocusFrom = () => setFocusFrom(true);
+    const handleFocusTo = () => setFocusTo(true);
+    const handleBlurFrom = () => setFocusFrom(false);
+    const handleBlurTo = () => setFocusTo(false);
 
-    const handlechange = (e) => {
-        let val = e.target.value;
-        setfrom(val);
-        if (val.length >= 2) {
-            let filters = cities.filter((place) => place.toLowerCase().includes(val.toLowerCase()));
-            setfiltered(filters);
-        } else {
-            setfiltered([]);
+    useEffect(() => {
+        fetchCities();
+    }, []);
+
+    const fetchCities = async () => {
+        try {
+            const res = await fetch('http://localhost:8000/cities');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setCities(data);
+            } else {
+                console.error('Fetched cities is not an array:', data);
+            }
+        } catch (err) {
+            console.error('Error fetching cities details:', err);
         }
-    }
+    };
 
-    const handlechangeto = (e) => {
+    const handleFromChange = (e) => {
         let val = e.target.value;
-        settocity(val);
+        setFromCity(val);
         if (val.length >= 2) {
-            let filters = cities.filter((place) => place.toLowerCase().includes(val.toLowerCase()));
-            setfilteredd(filters);
+            let filters = cities.filter((place) => place.city_name.toLowerCase().includes(val.toLowerCase()));
+            setFiltered(filters);
         } else {
-            setfilteredd([]);
+            setFiltered([]);
         }
-    }
+    };
 
-    const handlefromvalue = (place) => {
-        setfrom(place);
-        setfiltered([]);
-    }
+    const handleToChange = (e) => {
+        let val = e.target.value;
+        setToCity(val);
+        if (val.length >= 2) {
+            let filters = cities.filter((place) => place.city_name.toLowerCase().includes(val.toLowerCase()));
+            setFilteredTo(filters);
+        } else {
+            setFilteredTo([]);
+        }
+    };
 
-    const handlefromto = (places) => {
-        settocity(places);
-        setfilteredd([]);
-    }
+    const handleFromSelect = (place) => {
+        setFromCity(place);
+        setFiltered([]);
+    };
 
-    const handlesubmit = (e) => {
+    const handleToSelect = (place) => {
+        setToCity(place);
+        setFilteredTo([]);
+    };
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        let dates = document.getElementById('date').value;
-        setdate(dates);
-        navigate(`/search?from=${fromcity}&to=${tocity}&dates=${dates}`);
-    }
+        navigate(`/search?from=${fromCity}&to=${toCity}&dates=${date}`);
+    };
+
+    const handleDateChange = (e) => {
+        setDate(e.target.value);
+    };
+
+    const swapCities = () => {
+        setFromCity(toCity);
+        setToCity(fromCity);
+    };
+
+    const today = new Date().toISOString().split('T')[0];
 
     return (
         <div className='main'>
             <div className='form-container'>
-                <form onSubmit={handlesubmit} className='form'>
+                <form onSubmit={handleSubmit} className='form'>
                     <div className='input-group'>
-                        <TbUserDown className='icon' />
                         <input
                             type="text"
                             className='input-field'
                             placeholder='From'
-                            value={fromcity}
-                            onChange={handlechange}
-                            onFocus={handlefocusfrom}
-                            onBlur={handleblurfrom}
+                            value={fromCity}
+                            onChange={handleFromChange}
+                            onFocus={handleFocusFrom}
+                            onBlur={handleBlurFrom}
                             required
                         />
-                        {focusfrom && filtered.length > 0 && (
+                        {focusFrom && filtered.length > 0 && (
                             <ul className="dropdown">
                                 {filtered.map((place) => (
                                     <li
-                                        key={place}
-                                        onMouseDown={() => handlefromvalue(place)}
+                                        key={place.city_name}
+                                        onMouseDown={() => handleFromSelect(place.city_name)}
                                         className='dropdown-item'
                                     >
-                                        {place}
+                                        {place.city_name}
                                     </li>
                                 ))}
                             </ul>
                         )}
                     </div>
+                    <RiArrowLeftRightLine className='swap' onClick={swapCities} />
                     <div className='input-group'>
-                        <TbUserUp className='icon' />
                         <input
                             type="text"
                             className='input-field'
                             placeholder='To'
-                            value={tocity}
-                            onChange={handlechangeto}
-                            onFocus={handlefocusto}
-                            onBlur={handleblurto}
+                            value={toCity}
+                            onChange={handleToChange}
+                            onFocus={handleFocusTo}
+                            onBlur={handleBlurTo}
                             required
                         />
-                        {focusto && filteredd.length > 0 && (
+                        {focusTo && filteredTo.length > 0 && (
                             <ul className="dropdown">
-                                {filteredd.map((place) => (
+                                {filteredTo.map((place) => (
                                     <li
-                                        key={place}
-                                        onMouseDown={() => handlefromto(place)}
+                                        key={place.city_name}
+                                        onMouseDown={() => handleToSelect(place.city_name)}
                                         className='dropdown-item'
                                     >
-                                        {place}
+                                        {place.city_name}
                                     </li>
                                 ))}
                             </ul>
                         )}
                     </div>
                     <div className='input-group'>
-                        <BsCalendar3 className='icon' />
-                        <input type="text" id='date' className='input-field' placeholder='Date' required />
+                        <input
+                            type="date"
+                            id='date'
+                            className='input-field'
+                            placeholder='Date'
+                            value={date}
+                            onChange={handleDateChange}
+                            min={today}
+                            onClick={(e) => e.target.showPicker()}
+                            required
+                        />
                     </div>
                     <button type='submit' className='submit-button'>Search</button>
                 </form>
