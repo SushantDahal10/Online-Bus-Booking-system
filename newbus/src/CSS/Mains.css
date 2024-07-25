@@ -4,7 +4,7 @@
     background-size: cover; /* Adjusted to cover the entire div */
     min-height: 20vh; /* Adjusted to ensure the div is large enough */
     display: flex;
-    width: 100vw; /* Adjusted to make the width full */
+    width: 96.3vw; /* Adjusted to make the width full */
     align-items: center;
     justify-content: center;
     position: relative;
@@ -20,6 +20,7 @@
     height: 100%; /* Adjusted to cover the entire div */
     background: rgba(0, 0, 0, 0.7); 
     z-index: 1;
+    overflow: hidden;
 }
 
 .form-container {
@@ -31,6 +32,7 @@
     width: 100%;
     max-width: 500px;
     z-index: 2;
+    overflow: hidden;
 }
 
 /* Form styling */

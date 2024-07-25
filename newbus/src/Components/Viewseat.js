@@ -18,14 +18,15 @@ export default function Viewseat() {
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
 
   const detaiofpayment = {
-    from: params.get('from'),
-    to: params.get('to'),
-    date: params.get('date'),
-    bus_number: params.get('bus_number'),
-    departure: params.get('departure'),
-    arrival: params.get('arrival'),
-    fare: params.get('fare'),
-    travel_id: params.get('travel_id')
+    from: params.get('from') || '',  
+    to: params.get('to') || '',
+    date: params.get('date') || '',
+    bus_number: params.get('bus_number') || '',
+    departure: params.get('departure') || '',
+    arrival: params.get('arrival') || '',
+    fare: params.get('fare') || '',
+    travel_id: params.get('travel_id') || '',
+    date_of_travel: params.get('date') || ''
   };
 
   const handleBack = () => {

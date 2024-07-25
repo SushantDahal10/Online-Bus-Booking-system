@@ -3,7 +3,7 @@
     import { loadStripe } from '@stripe/stripe-js';
     import { useSelector } from 'react-redux';
 import Navbar from './Navbar'
-    const PassengerDetails = (props) => {
+    const PassengerDetails = () => {
         const selectedSeats = useSelector(state => state.busprice.selectedSeats);
         const params = new URLSearchParams(window.location.search);
         const price = params.get('price');
@@ -47,7 +47,8 @@ import Navbar from './Navbar'
                 travel_id: travel_id,
                 passenger: passenger,
                 contactDetails: contactDetails,
-                price:price
+                price:price,
+                date_of_travel:params.get('date_of_travel')
             };
             localStorage.setItem('detailofpassengers', JSON.stringify(objs));
 

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { pdf } from '@react-pdf/renderer';
+
 import '../CSS/Success.css';
-import StyledTicketPDF from './Ticketpdf';
+
 import Navbar from './Navbar';
 export default function Success() {
   const navigate = useNavigate();

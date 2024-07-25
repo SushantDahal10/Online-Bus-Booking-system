@@ -37,7 +37,7 @@ root.render(
           <Route path='/passengerdetail' element={<PassengerDetails />} />
           <Route path='/search' element={<Searchresult />} />
           <Route path='/viewseat' element={<Viewseat />} />
-          <Route path='/admin' element={<Nav />} />
+        
           <Route path='/payment/success' element={<Sucess />} />
           <Route path='/payment/failed' element={<Cancel />} />
           <Route path='/yourticket' element={<Tickets />} />

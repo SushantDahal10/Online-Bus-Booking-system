@@ -41,7 +41,7 @@ export default function Adminseats() {
   }, []);
 
   const handleBack = () => {
-    navigate('/admin');
+    navigate('/admin/travel');
   };
 
   const isOccupied = (seatId) => occupied.includes(seatId);
@@ -106,7 +106,7 @@ export default function Adminseats() {
           <div className="admin-backbtn">
             <IoArrowBackOutline />
           </div>
-          <div className="admin-backval" onClick={()=>navigate('/admin')}>
+          <div className="admin-backval">
             Go back
           </div>
         </button>

@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/Booking.css';
 import Navbar from './Navbar';
+
 export default function Booking() {
     const [bookings, setBookings] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [unauthorized, setUnauthorized] = useState(false);
-    
     const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(true); 
     useEffect(() => {
         const fetchBookings = async () => {
             try {
@@ -21,9 +22,13 @@ export default function Booking() {
                 }
 
                 const data = await res.json();
-                setBookings(data.result);
+                const sortedBookings = data.result.sort((a, b) => new Date(a.date_of_travel) - new Date(b.date_of_travel));
+                setBookings(sortedBookings);
             } catch (err) {
                 console.error('Error fetching bookings:', err);
+            }
+            finally{
+                setLoading(false)
             }
         };
 
@@ -39,13 +44,32 @@ export default function Booking() {
             </div>
         );
     }
+
     const handleSectionChange = (newSection) => {
         navigate(`/admin/${newSection}`);
-      };
+    };
+
+    const filteredBookings = bookings.filter((booking) =>
+        Object.values(booking).some((value) =>
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
+    if (loading) {
+        return (
+   <div className="container-fluid loading-container">Loading...</div>
+ );
+}
     return (
         <div className="booking-container">
-             <Navbar handleSectionChange={handleSectionChange} />
+            <Navbar handleSectionChange={handleSectionChange} />
             <h1>Bookings</h1>
+            <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-bar"
+            />
             <table className="booking-table">
                 <thead>
                     <tr>
@@ -66,7 +90,8 @@ export default function Booking() {
                     </tr>
                 </thead>
                 <tbody>
-                    {bookings.map((booking, index) => (
+        
+                    {filteredBookings.map((booking, index) => (
                         <tr key={index}>
                             <td>{booking.booking_id}</td>
                             <td>{booking.seat_no}</td>

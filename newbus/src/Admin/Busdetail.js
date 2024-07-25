@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/Busdetail.css'; 
 import Navbar from './Navbar';
+
 export default function BusDetail() {
     const [busDetails, setBusDetails] = useState([]);
     const [editingBusNumber, setEditingBusNumber] = useState(null);
+    const [loading, setLoading] = useState(true); 
     const [formData, setFormData] = useState({
         bus_number: '',
         bus_name: '',
@@ -12,6 +14,7 @@ export default function BusDetail() {
         capacity: ''
     });
     const [unauthorized, setUnauthorized] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const navigate = useNavigate();
 
@@ -34,6 +37,9 @@ export default function BusDetail() {
             setBusDetails(data.result);
         } catch (err) {
             console.error('Error fetching bus details:', err);
+        }
+        finally{
+            setLoading(false);
         }
     };
 
@@ -65,6 +71,9 @@ export default function BusDetail() {
         } catch (err) {
             console.error('Error adding bus detail:', err);
         }
+        finally{
+            setLoading(false);
+        }
     };
 
     const handleUpdate = async (bus_number) => {
@@ -89,6 +98,9 @@ export default function BusDetail() {
             setFormData({ bus_number: '', bus_name: '', contactno: '', capacity: '' });
         } catch (err) {
             console.error('Error updating bus detail:', err);
+        }
+        finally{
+            setLoading(false);
         }
     };
 
@@ -116,7 +128,18 @@ export default function BusDetail() {
         } catch (err) {
             console.error('Error deleting bus detail:', err);
         }
+    
     };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const filteredBusDetails = busDetails.filter((bus) =>
+        Object.values(bus).some((value) =>
+            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    );
 
     if (unauthorized) {
         return (
@@ -127,13 +150,21 @@ export default function BusDetail() {
             </div>
         );
     }
+    if (loading) {
+        return (
+   <div className="container-fluid loading-container">Loading...</div>
+ );
+}
     const handleSectionChange = (newSection) => {
         navigate(`/admin/${newSection}`);
-      };
+    };
+
     return (
         <div className="bus-detail-container">
             <Navbar handleSectionChange={handleSectionChange} />
+         
             <h1>Bus Details</h1>
+           
             <form onSubmit={handleAdd}>
                 <input
                     type="text"
@@ -168,7 +199,15 @@ export default function BusDetail() {
                     required
                 />
                 <button type="submit">Add</button>
+                <input
+                type="text"
+                placeholder="Search"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="search-bar"
+            />
             </form>
+            
             <table>
                 <thead>
                     <tr>
@@ -178,9 +217,12 @@ export default function BusDetail() {
                         <th>Capacity</th>
                         <th>Actions</th>
                     </tr>
+                    
                 </thead>
+                
                 <tbody>
-                    {busDetails.map((bus) => (
+                    
+                    {filteredBusDetails.map((bus) => (
                         <tr key={bus.bus_number}>
                             {editingBusNumber === bus.bus_number ? (
                                 <>

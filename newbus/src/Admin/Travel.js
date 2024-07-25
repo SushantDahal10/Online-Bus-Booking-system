@@ -14,6 +14,8 @@ export default function Travel() {
   const [focusDestination, setFocusDestination] = useState(false);
   const [adds, setAdds] = useState(true);
   const [cities, setCities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true); 
   const [formData, setFormData] = useState({
     source: '',
     destination: '',
@@ -24,7 +26,9 @@ export default function Travel() {
     date_of_travel: '',
     bus_number: ''
   });
-
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+};
   const [unauthorized, setUnauthorized] = useState(false);
   const navigate = useNavigate();
   const today = new Date().toISOString().split('T')[0];
@@ -34,7 +38,7 @@ export default function Travel() {
     fetchCities();
   }, []);
   const  handleviewseat=(travel_id)=>{
-    navigate(`/adminseats?travel_id=${travel_id}`)
+    navigate(`/admin/seats?travel_id=${travel_id}`)
   }
   const fetchCities = async () => {
     try {
@@ -54,6 +58,9 @@ export default function Travel() {
     } catch (err) {
       console.error('Error fetching cities details:', err);
     }
+    finally{
+      setLoading(false)
+    }
   };
 
   const fetchBusDetails = async () => {
@@ -72,6 +79,9 @@ export default function Travel() {
     } catch (err) {
       console.error('Error fetching bus details:', err);
     }
+    finally{
+      setLoading(false)
+    }
   };
 
   const fetchTravelDetails = async () => {
@@ -86,9 +96,13 @@ export default function Travel() {
       }
 
       const data = await res.json();
-      setTravelDetails(data.result);
+      const sortedtravel = data.result.sort((a, b) => new Date(a.date_of_travel) - new Date(b.date_of_travel));
+      setTravelDetails(sortedtravel);
     } catch (err) {
       console.error('Error fetching travel details:', err);
+    }
+    finally{
+      setLoading(false)
     }
   };
 
@@ -251,16 +265,26 @@ export default function Travel() {
       console.error('Error deleting travel detail:', err);
     }
   };
+  const filteredtraveldetail = travelDetails.filter((travels) =>
+    Object.values(travels).some((value) =>
+        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+);
 
   if (unauthorized) {
     return (
-      <div className="unauthorized-container">
+      <div className="unauthorized-container">  
         <h1>Unauthorized</h1>
         <p>You are not authorized to view this page. Please log in.</p>
         <button onClick={() => navigate('/adminlogin')}>Login</button>
       </div>
     );
   }
+  if (loading) {
+    return (
+<div className="container-fluid loading-container">Loading...</div>
+);
+}
   const handleSectionChange = (newSection) => {
     navigate(`/admin/${newSection}`);
   };
@@ -270,138 +294,179 @@ export default function Travel() {
       <h1>Travel Details</h1>
       {adds && (
         <form onSubmit={handleAdd}>
-          <div className="input-group">
-            <input
-              type="text"
-              name="source"
-              placeholder="Source"
-              value={formData.source}
-              onChange={handleChange}
-              onFocus={() => setFocusSource(true)}
-              onBlur={() => setFocusSource(false)}
-              required
-            />
-            {focusSource && filteredSource.length > 0 && (
-              <ul className="dropdown">
-                {filteredSource.map((place) => (
-                  <li
-                    key={place.city_name}
-                    onMouseDown={() => {
-                      setFormData({ ...formData, source: place.city_name });
-                      setFilteredSource([]);
-                    }}
-                    className="dropdown-item"
-                  >
-                    {place.city_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              name="destination"
-              placeholder="Destination"
-              value={formData.destination}
-              onChange={handleChange}
-              onFocus={() => setFocusDestination(true)}
-              onBlur={() => setFocusDestination(false)}
-              required
-            />
-            {focusDestination && filteredDestination.length > 0 && (
-              <ul className="dropdown">
-                {filteredDestination.map((place) => (
-                  <li
-                    key={place.city_name}
-                    onMouseDown={() => {
-                      setFormData({ ...formData, destination: place.city_name });
-                      setFilteredDestination([]);
-                    }}
-                    className="dropdown-item"
-                  >
-                    {place.city_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <input
-            type="text"
-            name="fare"
-            placeholder="Fare"
-            value={formData.fare}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="duration"
-            placeholder="Duration"
-            value={formData.duration}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="time"
-            name="departure"
-            placeholder="Departure"
-            value={formData.departure}
-            onChange={handleChange}
-            onClick={(e) => e.target.showPicker()}
-            required
-          />
-          <input
-            type="time"
-            name="arrival"
-            placeholder="Arrival"
-            value={formData.arrival}
-            onChange={handleChange}
-            onClick={(e) => e.target.showPicker()}
-            required
-          />
-          <input
-            type="date"
-            name="date_of_travel"
-            placeholder="Date of Travel"
-            value={formData.date_of_travel}
-            onChange={handleChange}
-            min={today}
-            onClick={(e) => e.target.showPicker()}
-            required
-          />
-          <div className="input-group">
-            <input
-              type="text"
-              name="bus_number"
-              placeholder="Bus Number"
-              value={formData.bus_number}
-              onChange={handleChange}
-              onFocus={() => setFocusBusNumber(true)}
-              onBlur={() => setFocusBusNumber(false)}
-              required
-            />
-            {focusBusNumber && filteredBusNumbers.length > 0 && (
-              <ul className="dropdown">
-                {filteredBusNumbers.map((bus) => (
-                  <li
-                    key={bus.bus_number}
-                    onMouseDown={() => {
-                      setFormData({ ...formData, bus_number: bus.bus_number });
-                      setFilteredBusNumbers([]);
-                    }}
-                    className="dropdown-item"
-                  >
-                    {bus.bus_number}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <button type="submit">Add</button>
-        </form>
-      )}
+  <div className="input-group">
+    <label htmlFor="source">Source<span>:</span></label>
+    <input
+      type="text"
+      id="source"
+      name="source"
+      placeholder="Source"
+      value={formData.source}
+      onChange={handleChange}
+      onFocus={() => setFocusSource(true)}
+      onBlur={() => setFocusSource(false)}
+      required
+    />
+    {focusSource && filteredSource.length > 0 && (
+      <ul className="dropdown">
+        {filteredSource.map((place) => (
+          <li
+            key={place.city_name}
+            onMouseDown={() => {
+              setFormData({ ...formData, source: place.city_name });
+              setFilteredSource([]);
+            }}
+            className="dropdown-item"
+          >
+            {place.city_name}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
 
+  <div className="input-group">
+    <label htmlFor="destination">Destination<span>:</span></label>
+    <input
+      type="text"
+      id="destination"
+      name="destination"
+      placeholder="Destination"
+      value={formData.destination}
+      onChange={handleChange}
+      onFocus={() => setFocusDestination(true)}
+      onBlur={() => setFocusDestination(false)}
+      required
+    />
+    {focusDestination && filteredDestination.length > 0 && (
+      <ul className="dropdown">
+        {filteredDestination.map((place) => (
+          <li
+            key={place.city_name}
+            onMouseDown={() => {
+              setFormData({ ...formData, destination: place.city_name });
+              setFilteredDestination([]);
+            }}
+            className="dropdown-item"
+          >
+            {place.city_name}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="fare">Fare<span>:</span></label>
+    <input
+      type="text"
+      id="fare"
+      name="fare"
+      placeholder="Fare"
+      value={formData.fare}
+      onChange={handleChange}
+      required
+    />
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="duration">Duration<span>:</span></label>
+    <input
+      type="text"
+      id="duration"
+      name="duration"
+      placeholder="Duration"
+      value={formData.duration}
+      onChange={handleChange}
+      required
+    />
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="departure">Departure<span>:</span></label>
+    <input
+      type="time"
+      id="departure"
+      name="departure"
+      placeholder="Departure"
+      value={formData.departure}
+      onChange={handleChange}
+      onClick={(e) => e.target.showPicker()}
+      required
+    />
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="arrival">Arrival<span>: </span></label>
+    <input
+      type="time"
+      id="arrival"
+      name="arrival"
+      placeholder="Arrival"
+      value={formData.arrival}
+      onChange={handleChange}
+      onClick={(e) => e.target.showPicker()}
+      required
+    />
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="date_of_travel">Date of Travel:</label>
+    <input
+      type="date"
+      id="date_of_travel"
+      name="date_of_travel"
+      placeholder="Date of Travel"
+      value={formData.date_of_travel}
+      onChange={handleChange}
+      min={today}
+      onClick={(e) => e.target.showPicker()}
+      required
+    />
+  </div>
+
+  <div className="input-group">
+    <label htmlFor="bus_number">Bus Number:</label>
+    <input
+      type="text"
+      id="bus_number"
+      name="bus_number"
+      placeholder="Bus Number"
+      value={formData.bus_number}
+      onChange={handleChange}
+      onFocus={() => setFocusBusNumber(true)}
+      onBlur={() => setFocusBusNumber(false)}
+      required
+    />
+    {focusBusNumber && filteredBusNumbers.length > 0 && (
+      <ul className="dropdown">
+        {filteredBusNumbers.map((bus) => (
+          <li
+            key={bus.bus_number}
+            onMouseDown={() => {
+              setFormData({ ...formData, bus_number: bus.bus_number });
+              setFilteredBusNumbers([]);
+            }}
+            className="dropdown-item"
+          >
+            {bus.bus_number}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+  
+  <button type="submit">Add</button>
+</form>
+
+      )}
+      <input
+                type="text"
+                placeholder="Search"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="search-bar"
+            />
       <table>
         <thead>
           <tr>
@@ -417,7 +482,7 @@ export default function Travel() {
           </tr>
         </thead>
         <tbody>
-          {travelDetails.map((travel) => (
+          {filteredtraveldetail.map((travel) => (
             <tr key={travel.travel_id}>
               <td>
                 {editingTravelId === travel.travel_id ? (

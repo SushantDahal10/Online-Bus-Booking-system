@@ -24,7 +24,7 @@ const Navigate=useNavigate();
 
       if (response.status === 200) {
         alert('Login successful');
-        Navigate('/admin')
+        Navigate('/admin/dashboard')
       } else {
         const errorData = await response.json();
         alert(errorData.error);

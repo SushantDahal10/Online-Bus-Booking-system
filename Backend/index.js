@@ -1,11 +1,20 @@
     const express = require('express');
     const app = express();
     const connection = require('./connection'); 
-    const multer = require('multer');
     const cors = require('cors');
     const moment = require('moment');
-    const upload = multer({ storage: multer.memoryStorage() });
+    const multer = require('multer');
+    const storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+          cb(null, 'uploads/');
+        },
+        filename: (req, file, cb) => {
+          cb(null, file.originalname);
+        }
+      });
+      const upload = multer({ storage });
     const nodemailer = require("nodemailer");
+    const path = require('path');
     const bodyParser = require('body-parser');
     const session = require('express-session');
     const stripe = require('stripe')('sk_test_51Pdc9DH8027hl3xprnBWhHLydYMFz29tB1GVqqN4LOxYNsgl5cVMoJrM4zgLePhTO0SpoFaaUx69mpVpCTcgtzmp00XhMZf2ff', {
@@ -15,7 +24,7 @@
     const cookieParser = require('cookie-parser');
 let temporarydata={};
 
-
+app.use(express.json()); 
     app.use(cors({
         origin: 'http://localhost:3000',
         credentials: true
@@ -114,6 +123,47 @@ let temporarydata={};
             }
         })
     })
+ 
+    app.post('/sendemailticket', authenticate, upload.single('file'), async (req, res) => {
+        console.log('Received file:', req.file);
+        console.log('Request body:', req.body);
+      
+        // Ensure email and file are provided
+        const { email } = req.body;
+        if (!email || !req.file) {
+          return res.status(400).send('Email or file not provided');
+        }
+      
+        const filePath = path.join(__dirname, 'uploads', req.file.filename);
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
+          auth: {
+            user: 'holidaily933@gmail.com',
+            pass: 'wgpc klqg sfwc dlod',
+          },
+        });
+      
+        const mailOptions = {
+          from: 'holidaily933@gmail.com',
+          to: email,
+          subject: 'Your Bus Ticket',
+          text: 'Please find your bus ticket attached.',
+          attachments: [{ path: filePath }],
+        };
+      
+        try {
+          await transporter.sendMail(mailOptions);
+          res.status(200).send('Email sent successfully');
+        } catch (error) {
+          console.error('Error sending email:', error);
+          res.status(500).send('Failed to send email');
+        }
+      });
+
+
     app.put('/travelupdate',verifyAdminToken, (req, res) => {
         const { travel_id } = req.query;
         const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_number } = req.body;
@@ -278,7 +328,7 @@ let temporarydata={};
     });
    
     app.post('/savepassengerdetails', (req, res) => {
-        console.log(req.body); // Log the request body to debug
+        console.log(req.body);
       
         const { travel_id, passenger, contactDetails, price } = req.body;
         const token = req.cookies.token;
@@ -292,7 +342,6 @@ let temporarydata={};
           let hasError = false;
           let processedCount = 0;
       
-          
           connection.query('SELECT seats_available FROM travel WHERE travel_id = ?', [travel_id], (err, rows) => {
             if (err) {
               console.error('Error fetching seats_available:', err);
@@ -300,7 +349,8 @@ let temporarydata={};
             }
             const seat = rows[0].seats_available;
       
-           
+            const individualPrice = price / passenger.length;
+      
             passenger.forEach((value) => {
               const query = 'SELECT * FROM booking WHERE travel_id = ? AND seat_no = ?';
               const values = [travel_id, value.seatnumber];
@@ -314,7 +364,7 @@ let temporarydata={};
       
                 if (result.length === 0) {
                   const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-                  const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone, price];
+                  const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone, individualPrice];
       
                   connection.query(insertQuery, insertValues, (err) => {
                     if (err) {
@@ -329,7 +379,6 @@ let temporarydata={};
                       if (hasError) {
                         return res.status(500).json({ message: 'Error saving some passenger details' });
                       } else {
-                        
                         connection.query('UPDATE travel SET seats_available = ? WHERE travel_id = ?', [seat - passenger.length, travel_id], (err) => {
                           if (err) {
                             console.error('Error updating seats_available:', err);
@@ -337,7 +386,6 @@ let temporarydata={};
                             console.log('Seats available updated');
                           }
       
-                       
                           res.status(200).json({ message: 'Passenger details saved successfully' });
                         });
                       }
@@ -360,6 +408,7 @@ let temporarydata={};
           });
         });
       });
+      
       
     
     app.post('/bookingstatus',(req,res)=>{
@@ -428,6 +477,16 @@ app.get('/admindetail',(req,res)=>{
             }
         })
     })
+    app.get('/totalcities',(req,res)=>{
+        connection.query('select count(*) as countcity from cities',(err,result)=>{
+            if(err){
+                console.log(err);
+            }
+            else{
+                res.status(200).json({result:result});
+            }
+        })
+    })
 app.post('/busadd',verifyAdminToken,(req,res)=>{
     console.log(req.body)
     const{bus_number,bus_name,contactno,capacity}=req.body
@@ -465,7 +524,7 @@ connection.query('DELETE FROM busdetail WHERE bus_number=?',[bus_number],(err,re
 
 })
 app.get('/bookings',verifyAdminToken,(req,res)=>{
-    const query = 'SELECT b.booking_id,b.bus_number, b.seat_no, b.booking_email, b.name, b.age, b.gender, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.id = bd.bus_id'
+    const query = 'SELECT b.booking_id, b.seat_no, b.booking_email, b.name, b.age, b.gender, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id'
     connection.query(query,(err,result)=>{
       if(err){
           console.log(err);

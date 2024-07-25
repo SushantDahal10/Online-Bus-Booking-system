@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Navbar from './Navbar';
 import './Admincss/Main.css';
 import Dashboard from './Dashboard';
@@ -9,10 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Main() {
   const [section, setSection] = useState('dashboard');
-  const [totalBus, setTotalBus] = useState();
-  const [dashboardData, setDashboardData] = useState({});
   const [unauthorized, setUnauthorized] = useState(false);
-  
   const navigate = useNavigate();
 
   const handleSectionChange = (newSection) => {
@@ -36,40 +33,6 @@ export default function Main() {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/admindetail', {
-          credentials: 'include'
-        });
-
-        if (response.status === 401) {
-          setUnauthorized(true);
-          return;
-        }
-
-        const data = await response.json();
-        setDashboardData(data.result[0]);
-
-        const operatorResponse = await fetch('http://localhost:8000/totaloperators', {
-          credentials: 'include'
-        });
-
-        if (operatorResponse.status === 401) {
-          setUnauthorized(true);
-          return;
-        }
-
-        const operatorData = await operatorResponse.json();
-        setTotalBus(operatorData.result[0].totaloperator);
-      } catch (err) {
-        console.log('Error fetching data:', err);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   if (unauthorized) {
     return (
       <>
@@ -87,13 +50,7 @@ export default function Main() {
     <div>
       <Navbar handleSectionChange={handleSectionChange} />
       <div className="content">
-        {section === 'dashboard' && (
-          <Dashboard
-            bookingCount={dashboardData.bookingcount}
-            totalRevenue={dashboardData.totalrevenue}
-            totalBus={totalBus}
-          />
-        )}
+        {section === 'dashboard' && <Dashboard setUnauthorized={setUnauthorized} />}
         {section === 'bus' && <BusDetail />}
         {section === 'travel' && <TravelDetail />}
         {section === 'booking' && <Booking />}
