@@ -84,6 +84,10 @@ export default function Main() {
     };
 
     const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+    const setDateToday = () => setDate(today);
+    const setDateTomorrow = () => setDate(tomorrow);
 
     return (
         <div className='main'>
@@ -98,6 +102,7 @@ export default function Main() {
                             onChange={handleFromChange}
                             onFocus={handleFocusFrom}
                             onBlur={handleBlurFrom}
+                            id='suggestions'
                             required
                         />
                         {focusFrom && filtered.length > 0 && (
@@ -140,11 +145,11 @@ export default function Main() {
                             </ul>
                         )}
                     </div>
-                    <div className='input-group'>
+                    <div className='input-group date-group'>
                         <input
                             type="date"
                             id='date'
-                            className='input-field'
+                            className='input-field date-input'
                             placeholder='Date'
                             value={date}
                             onChange={handleDateChange}
@@ -152,6 +157,10 @@ export default function Main() {
                             onClick={(e) => e.target.showPicker()}
                             required
                         />
+                        <div className='date-buttons'>
+                            <button type="button" className='date-button' onClick={setDateToday}>Today</button>
+                            <button type="button" className='date-button' onClick={setDateTomorrow}>Tomorrow</button>
+                        </div>
                     </div>
                     <button type='submit' className='submit-button'>Search</button>
                 </form>

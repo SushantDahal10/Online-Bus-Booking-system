@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import './Admincss/Adminlogin.css';
-
+import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
+
 export default function AdminLogin() {
   const [formData, setFormData] = useState({ email: '', password: '' });
 const Navigate=useNavigate();
@@ -9,7 +10,7 @@ const Navigate=useNavigate();
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -35,11 +36,13 @@ const Navigate=useNavigate();
   };
 
 
-
+  const handleSectionChange = (newSection) => {
+    navigate(`/admin/${newSection}`);
+  }
   return (
     <>
   
-
+<Navbar handleSectionChange={handleSectionChange}></Navbar>
     <div className="unique-admin-login-container">
       <h2 className="unique-login-heading">Admin Login</h2>
       <form className="unique-login-form" onSubmit={handleSubmit}>

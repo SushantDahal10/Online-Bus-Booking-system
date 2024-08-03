@@ -1,11 +1,12 @@
-import React from 'react';
-import { LuBus } from "react-icons/lu";
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import '../CSS/Login.css';  // Make sure to create and import this CSS file
+import '../CSS/Login.css';
 
 export default function Login() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -43,12 +44,9 @@ export default function Login() {
     <div>
       <Navbar />
       <div className="login-container">
-      
-
         <div className="login-form-container">
           <form className="login-form" method="POST" onSubmit={handleSubmit}>
             <div className="input-group">
-        
               <input
                 id="email"
                 name="email"
@@ -59,30 +57,39 @@ export default function Login() {
               />
             </div>
 
-            <div className="input-group">
-              
+            <div className="input-group password-group111">
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
                 placeholder="Enter your password"
               />
-            </div>
-            <a
-                href="#forgot-password"
-                className="forgot-password"
-                onClick={() => navigate('/forgotpassword')}
+              <button
+                type="button"
+                className="password-toggle111"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                Forgot password?
-              </a>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+
+            <a
+              href="#forgot-password"
+              className="forgot-password"
+              onClick={() => navigate('/forgotpassword')}
+            >
+              Forgot password?
+            </a>
+
             <div className="login-actions">
-              
               <button type="submit" className="submit-button">Sign in</button>
             </div>
           </form>
-<br />
+
+          <br />
+
           <div className="signup-option">
             <p>Don't have an account?</p>
             <button onClick={() => navigate('/signup')} className="signup-button">Sign Up</button>

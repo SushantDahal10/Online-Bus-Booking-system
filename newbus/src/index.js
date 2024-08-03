@@ -24,6 +24,7 @@ import store from './redux/Store';
 import Booking from './Admin/Booking';
 import AdminLogin from './Admin/Adminlogin';
 import Dashboard from './Admin/Dashboard';
+import Cities from './Admin/City';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
@@ -50,6 +51,7 @@ root.render(
           <Route path='/admin/travel' element={<Travel></Travel>} />
           <Route path='/admin/booking' element={<Booking></Booking>} />
           <Route path='/admin/dashboard' element={<Dashboard></Dashboard>} />
+          <Route path='/admin/cities' element={<Cities></Cities>} />
         </Routes>
       </BrowserRouter>
     </Provider>

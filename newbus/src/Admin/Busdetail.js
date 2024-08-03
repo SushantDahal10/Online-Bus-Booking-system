@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/Busdetail.css'; 
 import Navbar from './Navbar';
+import ConfirmationModal from './Confirmdelete';
 
 export default function BusDetail() {
     const [busDetails, setBusDetails] = useState([]);
@@ -15,6 +16,8 @@ export default function BusDetail() {
     });
     const [unauthorized, setUnauthorized] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [busToDelete, setBusToDelete] = useState(null);
 
     const navigate = useNavigate();
 
@@ -37,8 +40,7 @@ export default function BusDetail() {
             setBusDetails(data.result);
         } catch (err) {
             console.error('Error fetching bus details:', err);
-        }
-        finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -70,8 +72,7 @@ export default function BusDetail() {
             setFormData({ bus_number: '', bus_name: '', contactno: '', capacity: '' });
         } catch (err) {
             console.error('Error adding bus detail:', err);
-        }
-        finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -98,8 +99,7 @@ export default function BusDetail() {
             setFormData({ bus_number: '', bus_name: '', contactno: '', capacity: '' });
         } catch (err) {
             console.error('Error updating bus detail:', err);
-        }
-        finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -109,9 +109,14 @@ export default function BusDetail() {
         setEditingBusNumber(bus.bus_number);
     };
 
-    const handleDelete = async (bus_number) => {
+    const handleDelete = (bus_number) => {
+        setBusToDelete(bus_number);
+        setShowModal(true);
+    };
+
+    const confirmDelete = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/deletebus?bus_number=${bus_number}`, {
+            const response = await fetch(`http://localhost:8000/deletebus?bus_number=${busToDelete}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -123,12 +128,18 @@ export default function BusDetail() {
 
             if (response.ok) {
                 alert('Bus Deleted Successfully');
+                fetchBusDetails();
             }
-            fetchBusDetails();
         } catch (err) {
             console.error('Error deleting bus detail:', err);
+        } finally {
+            setShowModal(false);
         }
-    
+    };
+
+    const cancelDelete = () => {
+        setShowModal(false);
+        setBusToDelete(null);
     };
 
     const handleSearchChange = (e) => {
@@ -150,11 +161,13 @@ export default function BusDetail() {
             </div>
         );
     }
+
     if (loading) {
         return (
-   <div className="container-fluid loading-container">Loading...</div>
- );
-}
+            <div className="container-fluid loading-container">Loading...</div>
+        );
+    }
+
     const handleSectionChange = (newSection) => {
         navigate(`/admin/${newSection}`);
     };
@@ -162,9 +175,9 @@ export default function BusDetail() {
     return (
         <div className="bus-detail-container">
             <Navbar handleSectionChange={handleSectionChange} />
-         
+
             <h1>Bus Details</h1>
-           
+
             <form onSubmit={handleAdd}>
                 <input
                     type="text"
@@ -200,14 +213,14 @@ export default function BusDetail() {
                 />
                 <button type="submit">Add</button>
                 <input
-                type="text"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="search-bar"
-            />
+                    type="text"
+                    placeholder="Search"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="search-bar"
+                />
             </form>
-            
+
             <table>
                 <thead>
                     <tr>
@@ -217,11 +230,9 @@ export default function BusDetail() {
                         <th>Capacity</th>
                         <th>Actions</th>
                     </tr>
-                    
                 </thead>
-                
+
                 <tbody>
-                    
                     {filteredBusDetails.map((bus) => (
                         <tr key={bus.bus_number}>
                             {editingBusNumber === bus.bus_number ? (
@@ -251,6 +262,14 @@ export default function BusDetail() {
                     ))}
                 </tbody>
             </table>
+
+            {showModal && (
+                <ConfirmationModal
+                    message="Are you sure you want to delete this bus?"
+                    onConfirm={confirmDelete}
+                    onCancel={cancelDelete}
+                />
+            )}
         </div>
     );
 }

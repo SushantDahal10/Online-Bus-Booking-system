@@ -30,7 +30,7 @@ primary key(user_id)
 select * from user;
 drop table user;
 select * from busdetail;
-CREATE TABLE travel (
+CREATE TABLE travel (		
     travel_id INT NOT NULL AUTO_INCREMENT,
     source VARCHAR(255) NOT NULL,
     destination VARCHAR(255) NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE booking (
     FOREIGN KEY (travel_id) REFERENCES travel(travel_id) ON DELETE CASCADE
 ) AUTO_INCREMENT = 0;
 
-select * from booking;
+select * from booking;			
 drop table booking;
 truncate table booking;
 
@@ -78,5 +78,5 @@ city_id int not null primary key auto_increment,
 city_name varchar(255) not null
 )auto_increment=0;
 ALTER TABLE cities ADD constraint city_unique UNIQUE(city_name);
-select * from cities;
+select count(*) from cities;
 

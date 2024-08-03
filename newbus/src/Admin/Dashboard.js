@@ -82,7 +82,7 @@ const Dashboard = ({ setUnauthorized }) => {
           <p>{totalBus}</p>
         </div>
         <div className="card teal">
-          <h2>City</h2>
+          <h2>Cities</h2>
           <p>{totalCity}</p>
         </div>
       </div>

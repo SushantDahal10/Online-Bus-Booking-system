@@ -93,7 +93,10 @@ button {
     cursor: pointer;
     margin-right: 5px;
 }
-
+.nnn{
+    display: flex;
+    justify-content: space-between;
+}
 button:hover {
     opacity: 0.8;
 }

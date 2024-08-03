@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Main() {
   const [section, setSection] = useState('dashboard');
+  
   const [unauthorized, setUnauthorized] = useState(false);
   const navigate = useNavigate();
 

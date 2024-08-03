@@ -34,20 +34,24 @@ export default function Booking() {
 
         fetchBookings();
     }, []);
-
+    const handleSectionChange = (newSection) => {
+        navigate(`/admin/${newSection}`);
+    };
     if (unauthorized) {
         return (
+            <>
+          
+    
             <div className="unauthorized-container">
                 <h1>Unauthorized</h1>
                 <p>You are not authorized to view this page. Please log in.</p>
                 <button onClick={() => navigate('/login')}>Login</button>
             </div>
+            </>
         );
     }
 
-    const handleSectionChange = (newSection) => {
-        navigate(`/admin/${newSection}`);
-    };
+  
 
     const filteredBookings = bookings.filter((booking) =>
         Object.values(booking).some((value) =>
@@ -60,6 +64,8 @@ export default function Booking() {
  );
 }
     return (
+        <>
+     
         <div className="booking-container">
             <Navbar handleSectionChange={handleSectionChange} />
             <h1>Bookings</h1>
@@ -112,5 +118,6 @@ export default function Booking() {
                 </tbody>
             </table>
         </div>
+        </>
     );
 }

@@ -1,17 +1,67 @@
-/* Navbar.css */
-
+/* Container for the navigation bar */
 .navbar {
+  background-color: #ffffff;
+  padding: 10px 20px;
+  border-bottom: 1px solid #e0e0e0;
   display: flex;
-  justify-content: space-around;
-  background-color: #333;
-  padding: 10px;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Navigation items container */
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Individual nav item styling */
 .nav-item {
-  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
   cursor: pointer;
 }
 
-.nav-item:hover {
-  text-decoration: underline;
+.nav-item svg {
+  height: 30px;
+  width: 30px;
+  margin-bottom: 5px;
+}
+
+.nav-item span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 10px;
+  display: none;
+  color: black;
+  z-index: 20;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-menu .dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #007bff;
+  color: #ffffff;
 }

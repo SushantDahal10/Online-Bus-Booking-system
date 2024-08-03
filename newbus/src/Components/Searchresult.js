@@ -26,8 +26,8 @@ export default function Searchresult() {
         fetchBusDetails();
         checkDateBackDisabled();
     }, [searchParams, date]);
-    const handleViewSeat = (busno, departure, arrival, fare, travel_id) => {
-        navigate(`/viewseat?from=${searchParams.get('from')}&to=${searchParams.get('to')}&date=${searchParams.get('dates')}&bus_number=${busno}&departure=${departure}&arrival=${arrival}&fare=${fare}&travel_id=${travel_id}`);
+    const handleViewSeat = (busno, departure, arrival, fare, travel_id,capacity) => {
+        navigate(`/viewseat?from=${searchParams.get('from')}&to=${searchParams.get('to')}&date=${searchParams.get('dates')}&bus_number=${busno}&departure=${departure}&arrival=${arrival}&fare=${fare}&travel_id=${travel_id}&capacity=${capacity}`);
     };
     const fetchCities = async () => {
         try {
@@ -110,6 +110,7 @@ export default function Searchresult() {
 
     const handleModifySearch = (e) => {
         e.preventDefault();
+        setShowModify(false)
         setSearchParams({ from: fromCity, to: toCity, dates: date });
         navigate(`/search?from=${fromCity}&to=${toCity}&dates=${date}`);
     };
@@ -212,6 +213,7 @@ export default function Searchresult() {
                                 onChange={(e) => handleDateChange(e.target.value)}
                                 placeholder={searchParams.get('dates') || ''}
                                 min={today}
+                                onClick={(e) => e.target.showPicker()}
                             />
                         </div>
                         <button className="modify-search-button" type="submit">Modify Search</button>
@@ -257,7 +259,7 @@ export default function Searchresult() {
                                     <p>{item.seats_available} Out of {item.capacity}</p>
                                 </div>
                                 <div className="btn">
-                                    <button className="view-seat" onClick={() => handleViewSeat(item.bus_number, item.departure, item.arrival, item.fare, item.travel_id)}>View Seats</button>
+                                    <button className="view-seat" onClick={() => handleViewSeat(item.bus_number, item.departure, item.arrival, item.fare, item.travel_id,item.capacity)}>View Seats</button>
                                 </div>
                             </div>
                         ))}

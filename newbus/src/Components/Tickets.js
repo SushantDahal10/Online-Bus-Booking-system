@@ -5,7 +5,6 @@ import Navbar from './Navbar';
 import '../CSS/Ticket.css';
 import { useNavigate } from 'react-router-dom';
 
-// Define your PDF Document component
 const StyledTicketPDF = ({ ticketGroup }) => {
   const { source, destination, date_of_travel, bus_name, bus_number, departure, arrival, booking_id, boarding_point, seats, price } = ticketGroup;
 
@@ -84,10 +83,38 @@ const StyledTicketPDF = ({ ticketGroup }) => {
 
 const Tickets = () => {
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTickets = async () => {
+    const checkAuthorization = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/admintokencheck', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          console.log('Token is valid');
+          fetchTickets();
+        } else {
+          setAuthorized(false);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Error checking token:', err);
+        setAuthorized(false);
+        setLoading(false);
+      }
+    };
+
+    checkAuthorization();
+  }, []);
+
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
       const response = await fetch('http://localhost:8000/gettickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,10 +123,16 @@ const Tickets = () => {
       if (response.ok) {
         const json = await response.json();
         setTickets(json);
+      } else {
+        // Handle server-side errors
+        console.error('Failed to fetch tickets.');
       }
-    };
-    fetchTickets();
-  }, []);
+    } catch (err) {
+      console.error('Error fetching tickets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const groupTickets = (tickets) => {
     return tickets.reduce((acc, ticket) => {
@@ -115,6 +148,25 @@ const Tickets = () => {
   };
 
   const groupedTickets = groupTickets(tickets);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!authorized) {
+    return (
+      <div>
+        <Navbar />
+        <div className="unauthorized-message">
+          <h1>Please login first</h1>
+          <button onClick={() => navigate('/login')} className="login-button">
+            Go to Login Page
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <>

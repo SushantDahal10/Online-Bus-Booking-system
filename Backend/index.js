@@ -3,6 +3,8 @@
     const connection = require('./connection'); 
     const cors = require('cors');
     const moment = require('moment');
+    const bcrypt = require('bcrypt');
+const saltRounds = 10;
     const multer = require('multer');
     const storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -75,6 +77,18 @@ app.use(express.json());
     app.get('/tokencheck', authenticate, (req, res) => {
         res.status(200).json({ message: 'Token is valid', email: req.email });
     });
+    app.post('/admin/logout', (req, res) => {
+      res.clearCookie('admintoken'); 
+      req.session.destroy(err => {
+          if (err) {
+              return res.status(500).send('Failed to sign out.');
+          }
+          res.status(200).send('Signed out successfully.');
+      });
+  });
+    app.get('/admintokencheck', verifyAdminToken, (req, res) => {
+      res.status(200).json({ message: 'Token is valid', email: req.email });
+  });
       app.post('/adminlogin', (req, res) => {
         const { email, password } = req.body;
       
@@ -83,7 +97,7 @@ app.use(express.json());
       
           const token = generateToken(email);
      
-          res.cookie('admintoken', token, { httpOnly: true, secure: true, maxAge: 36000000 }); 
+          res.cookie('admintoken', token, { httpOnly: true, secure: true, maxAge: 144000000 }); 
           res.status(200).json({ message: 'Login successful' });
         } else {
           res.status(401).json({ error: 'Invalid email or password' });
@@ -128,7 +142,7 @@ app.use(express.json());
         console.log('Received file:', req.file);
         console.log('Request body:', req.body);
       
-        // Ensure email and file are provided
+        
         const { email } = req.body;
         if (!email || !req.file) {
           return res.status(400).send('Email or file not provided');
@@ -246,54 +260,85 @@ app.use(express.json());
             }
             res.status(200).json({result:result})
         })   })
-    app.post('/signup', (req, res) => {
-        const { email, password } = req.body;
-    
-        connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
-            if (err) {
-                console.error('Error selecting from database:', err);
-                return res.status(500).json({ error: 'Database selection error: ' + err.message });
+        app.post('/signup', async (req, res) => {
+            const { email, password } = req.body;
+        
+            try {
+                // Check if email already exists
+                connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
+                    if (err) {
+                        console.error('Error selecting from database:', err);
+                        return res.status(500).json({ error: 'Database selection error: ' + err.message });
+                    }
+        
+                    if (result.length > 0) {
+                        return res.status(400).json({ message: 'Email already exists' });
+                    }
+        
+                    // Hash the password
+                    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+                        if (err) {
+                            console.error('Error hashing password:', err);
+                            return res.status(500).json({ error: 'Error hashing password: ' + err.message });
+                        }
+        
+                       
+                        connection.query('INSERT INTO user (user_email, user_password) VALUES (?, ?)', [email, hashedPassword], (err, result) => {
+                            if (err) {
+                                console.error('Error inserting into database:', err);
+                                return res.status(500).json({ error: 'Database insertion error: ' + err.message });
+                            }
+                            return res.status(200).json({ message: 'Successfully registered' });
+                        });
+                    });
+                });
+            } catch (e) {
+                console.error('Error in signup process:', e);
+                res.status(500).json({ error: 'Server error: ' + e.message });
             }
-    
-            if (result.length > 0) {
-                return res.status(400).json({ message: 'Email already exists' });
-            }
-    
-            connection.query('INSERT INTO user (user_email, user_password) VALUES (?, ?)', [email, password], (err, result) => {
+        });
+        app.post('/login', (req, res) => {
+            const { email, password } = req.body;
+        
+            // Retrieve user by email
+            connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
                 if (err) {
-                    console.error('Error inserting into database:', err);
-                    return res.status(500).json({ error: 'Database insertion error: ' + err.message });
+                    return res.status(500).json({ error: 'Database query error: ' + err.message });
                 }
-                return res.status(200).json({ message: 'Successfully registered' });
+        
+                // Check if user exists
+                if (result.length === 0) {
+                    return res.status(401).json({ message: 'Invalid email or password' });
+                }
+        
+                const user = result[0];
+        
+                // Compare password with hashed password
+                bcrypt.compare(password, user.user_password, (err, isMatch) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
+                    }
+        
+                    if (isMatch) {
+          
+                        const accessToken = jwt.sign({ email: user.user_email }, 'your_jwt_secret_key', { expiresIn: '1h' });
+                        
+                     
+                        res.cookie('token', accessToken, {
+                            httpOnly: true,
+                            secure: false,  
+                            sameSite: 'lax',
+                            expires: new Date(Date.now() + 144000000)  
+                        });
+        
+                        return res.status(200).json({ token: accessToken });
+                    } else {
+                        return res.status(401).json({ message: 'Invalid email or password' });
+                    }
+                });
             });
         });
-    }); 
-    app.post('/login', (req, res) => {
-        const { email, password } = req.body;
-        const user={email:email}
-        
-        connection.query('SELECT * FROM user WHERE user_email = ? AND user_password = ?', [email, password], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-
-            if (result.length > 0) {
-                const accesstoken=jwt.sign(user,'rams')
-                console.log(accesstoken)
-                res.cookie('token', accesstoken, {
-                    httpOnly: true,
-                    secure: false, 
-                    sameSite: 'lax',
-                    expires: new Date(Date.now() + 3600000) 
-                });
-                return res.status(200).json({ token:accesstoken});
-            } else {
-                return res.status(401).json({ message: 'Invalid email or password' });
-            }
-        });
-    });
-
-    ///stripe
+   
     app.post('/create-checkout-session',authenticate, async (req, res) => {
         const { selectedSeats, price } = req.body;
         console.log(selectedSeats, price);
@@ -425,6 +470,54 @@ connection.query(query,[travel_id],(err,result)=>{
     })
 
     
+    app.get('/admin/cities', verifyAdminToken, (req, res) => {
+        const query = 'SELECT * FROM cities';
+        
+        connection.query(query, (err, result) => {
+            if (err) {
+                console.error('Error fetching cities:', err);
+                res.status(500).json({ error: 'Internal Server Error' });
+            } else {
+                res.status(200).json({ result });
+            }
+        });
+    });
+    app.post('/admin/cities', verifyAdminToken, (req, res) => {
+        const { city_name } = req.body;
+    
+        if (!city_name || city_name.trim() === '') {
+            return res.status(400).json({ error: 'City name cannot be empty' });
+        }
+    
+        const query = 'INSERT INTO cities (city_name) VALUES (?)';
+        
+        connection.query(query, [city_name], (err, result) => {
+            if (err) {
+                console.error('Error adding city:', err);
+                res.status(500).json({ error: 'Internal Server Error' });
+            } else {
+                res.status(201).json({ result: { city_name, id: result.insertId } });
+            }
+        });
+    });
+    app.delete('/admin/cities/:id', verifyAdminToken, (req, res) => {
+        const { id } = req.params;
+    
+        const query = 'DELETE FROM cities WHERE city_id = ?';
+    
+        connection.query(query, [id], (err, result) => {
+            if (err) {
+                console.error('Error deleting city:', err);
+                res.status(500).json({ error: 'Internal Server Error' });
+            } else if (result.affectedRows === 0) {
+                res.status(404).json({ error: 'City not found' });
+            } else {
+                res.status(200).json({ message: 'City deleted successfully' });
+            }
+        });
+    });
+    
+    
     
     app.get('/alltravel', (req, res) => {
         const { from, to, date } = req.query;
@@ -447,7 +540,7 @@ connection.query(query,[travel_id],(err,result)=>{
             }
         );
     });
-app.get('/admindetail',(req,res)=>{
+app.get('/admindetail',verifyAdminToken,(req,res)=>{
       connection.query('SELECT COUNT(*) AS bookingcount,SUM(price) as totalrevenue FROM booking',(err,result)=>{
         if(err){
             console.log(err);
@@ -457,6 +550,24 @@ app.get('/admindetail',(req,res)=>{
         }
       })
 })
+app.post('/getbuscapacity',(req, res) => {
+    const { bus_number } = req.body;
+    console.log(bus_number)
+    if (!bus_number) {
+      return res.status(400).json({ error: 'Bus number is required' });
+    }
+  
+    connection.query('SELECT capacity FROM busdetail WHERE bus_number = ?', [bus_number], (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Bus not found' });
+      }
+      res.status(200).json({ capacity: result[0].capacity });
+    });
+  });
     app.get('/busdetail',verifyAdminToken,(req,res)=>{
         connection.query('SELECT * FROM busdetail',(err,result)=>{
         if(err){
@@ -477,7 +588,7 @@ app.get('/admindetail',(req,res)=>{
             }
         })
     })
-    app.get('/totalcities',(req,res)=>{
+    app.get('/totalcities',verifyAdminToken,(req,res)=>{
         connection.query('select count(*) as countcity from cities',(err,result)=>{
             if(err){
                 console.log(err);
@@ -600,7 +711,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
 
         })
     })
-    app.post('/verifyemail', (req, res) => {
+    app.post('/verifyemail',authenticate, (req, res) => {
         const email = req.body.email;
         connection.query('SELECT user_email, user_id FROM user WHERE user_email = ?', [email], (err, results) => {
             if (err) {
@@ -615,7 +726,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
             }
         });
     });
-    app.post('/verifyotp',(req,res)=>{
+    app.post('/verifyotp',authenticate,(req,res)=>{
   
         const {otp,email}=req.body;
         if (!temporarydata[email]) {
@@ -632,7 +743,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
             return res.status(400).json({ message: 'Invalid OTP' });
           }
     })
-    app.post('/sendemail', async (req, res) => {
+    app.post('/sendemail',authenticate, async (req, res) => {
         const { email, otp } = req.body;
         temporarydata[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
       
@@ -678,13 +789,15 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
           res.status(500).json({ message: 'Failed to send OTP email' });
         }
       })
-    app.post('/passwordchange',(req,res)=>{
+    app.post('/passwordchange',authenticate,(req,res)=>{
         const {email,password}=req.body
+        console.log(email)
+        console.log(password)
         connection.query('UPDATE user SET user_password=? where user_email=?',[password,email],(err,result)=>{
             if(err) {
-                res.status(400).send('cant change password')
+                res.status(400).json({message:'cant change password'})
             }
-            res.status(200).send('Password changed successfully');
+            res.status(200).json({message:'Password changed successfully'});
         })
     })
     app.post('/signout', (req, res) => {
@@ -696,8 +809,94 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
             res.status(200).send('Signed out successfully.');
         });
     });
+    const temporaryData1 = {};
+    const checkEmailExists = (email, callback) => {
+        connection.query('SELECT user_email FROM user WHERE user_email = ?', [email], (error, results) => {
+            if (error) {
+                return callback(error);
+            }
+            callback(null, results.length > 0);
+        });
+    };
     
- 
+    app.post('/sendSignupOtp', (req, res) => {
+        const { email, otp } = req.body;
+    
+        checkEmailExists(email, (error, exists) => {
+            if (error) {
+                return res.status(500).json({ message: 'Database error' });
+            }
+            if (exists) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
+    
+           
+            temporaryData1[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
+    
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: 'holidaily933@gmail.com',
+                    pass: 'wgpc klqg sfwc dlod',
+                },
+            });
+    
+            transporter.sendMail({
+                from: '"New Bus Pvt. Ltd" <holidaily933@gmail.com>',
+                to: email,
+                subject: 'Your OTP Code for Signup',
+                text: `Hello,
+    
+    We received a request to sign up with this email. Your OTP code is ${otp}.
+    
+    Please use this code to complete your signup process.
+    
+    If you did not request this, please ignore this email.
+    
+    Best regards,
+    New Bus Pvt. Ltd.`,
+                html: `
+                  <p>Hello,</p>
+                  <p>We received a request to sign up with this email. Your OTP code is <strong>${otp}</strong>.</p>
+                  <p>Please use this code to complete your signup process.</p>
+                  <p>If you did not request this, please ignore this email.</p>
+                  <p>Best regards,<br />New Bus Pvt. Ltd.</p>
+                `,
+            }, (error, info) => {
+                if (error) {
+                    console.error('Error sending email:', error);
+                    return res.status(500).json({ message: 'Failed to send OTP email' });
+                }
+                console.log('Message sent: %s', info.messageId);
+                res.status(200).json({ message: 'OTP email sent successfully' });
+            });
+        });
+    });
+    app.post('/verifySignupOtp', (req, res) => {
+        const { email, otp } = req.body;
+    
+        if (!temporaryData1[email]) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+    
+        const { otp: storedOtp, expires } = temporaryData1[email];
+    
+        if (Date.now() > expires) {
+            delete temporaryData1[email];
+            return res.status(400).json({ message: 'OTP has expired' });
+        }
+    
+        if (storedOtp !== otp) {
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+    
+        delete temporaryData1[email];
+        res.status(200).json({ message: 'OTP verified successfully' });
+    });
+    
     app.listen(8000, () => {
         console.log('Server started on port 8000');
     });

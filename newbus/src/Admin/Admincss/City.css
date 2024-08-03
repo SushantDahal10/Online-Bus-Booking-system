@@ -1,0 +1,35 @@
+.city-container {
+    padding: 20px;
+}
+
+.search-bar {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+.city-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.city-table th,
+.city-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.add-city {
+    display: flex;
+    gap: 10px;
+}
+
+.add-city input {
+    padding: 5px;
+    flex: 1;
+}
+
+.add-city button {
+    padding: 5px 10px;
+}
