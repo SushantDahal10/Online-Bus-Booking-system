@@ -4,7 +4,8 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import '../CSS/Login.css';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -29,11 +30,21 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        alert('Successfully logged in');
-        navigate('/');
+        toast.success('Successfully logged in', {
+          autoClose: 700, 
+          onClose: () => {
+              setTimeout(() => {
+                  navigate('/');
+              }, 0.02);  
+          }
+      });
+      
       } else {
         const errorData = await response.json();
-        alert(errorData.message);
+        toast.error(errorData.message,{
+         
+          autoClose: 900,
+        });
       }
     } catch (error) {
       alert('An error occurred: ' + error.message);
@@ -43,6 +54,7 @@ export default function Login() {
   return (
     <div>
       <Navbar />
+      <ToastContainer />
       <div className="login-container">
         <div className="login-form-container">
           <form className="login-form" method="POST" onSubmit={handleSubmit}>

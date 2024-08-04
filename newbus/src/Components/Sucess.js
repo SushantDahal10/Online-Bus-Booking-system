@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import '../CSS/Success.css';
 import Navbar from './Navbar';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Success() {
     const [loading, setLoading] = useState(true);
     const [authorized, setAuthorized] = useState(true);
@@ -35,7 +37,7 @@ export default function Success() {
             console.log(obj);
 
             if (!obj) {
-                alert('No passenger details found in localStorage');
+              
                 setLoading(false);
                 return;
             }
@@ -52,15 +54,22 @@ export default function Success() {
 
                 if (response.ok) {
                     console.log('Passenger details saved successfully');
+                    toast.success('Booked Successfully',{
+                        autoClose:1400
+                    })
                     setTimeout(() => {
                         navigate('/');
-                    }, 5000);
+                    }, 1500);
                 } else {
-                    alert('Failed to save passenger details');
+                    toast.error('Failed',{
+                        autoClose:900
+                    });
                     setLoading(false);
                 }
             } catch (err) {
-                alert(`Error: ${err.message || err}`);
+                toast.error(`Error: ${err.message || err}`,{
+                    autoClose:900
+                });
                 setLoading(false);
             }
         };
@@ -92,6 +101,7 @@ export default function Success() {
     return (
         <>
             <Navbar />
+            <ToastContainer />
             <div className="success-container">
                 <h1>Success</h1>
                 <p>Your booking details have been successfully saved.</p>

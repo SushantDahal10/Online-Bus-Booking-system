@@ -2,7 +2,8 @@
   import { useSelector } from 'react-redux';
   import { useNavigate } from 'react-router-dom';
   import '../CSS/Payment.css'; 
-
+  import { ToastContainer, toast } from 'react-toastify';
+  import 'react-toastify/dist/ReactToastify.css';
   export default function Payment(props) {
     const selectedSeats = useSelector(state => state.busprice.selectedSeats);
     const { paymentdetail } = props;
@@ -25,8 +26,15 @@
             navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}&date_of_travel=${paymentdetail.date_of_travel}`);
           }
           else{
-            alert('Please login first')
-            navigate('/login')
+            toast.error('Please login first', {
+              autoClose: 700, 
+              onClose: () => {
+                  setTimeout(() => {
+                      navigate('/login');
+                  }, 0.02);  
+              }
+          });
+           
           }
         } catch (error) {
             console.error('Error:', error);
@@ -39,7 +47,9 @@
     }
 
     return (
+      
       <div className="payment-container">
+              <ToastContainer />
         <div className="payment-card">
           <h2 className="card-title">Payment Summary</h2>
 

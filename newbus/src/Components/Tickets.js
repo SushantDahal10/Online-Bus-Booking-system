@@ -4,7 +4,8 @@ import Footer from './Footer';
 import Navbar from './Navbar';
 import '../CSS/Ticket.css';
 import { useNavigate } from 'react-router-dom';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const StyledTicketPDF = ({ ticketGroup }) => {
   const { source, destination, date_of_travel, bus_name, bus_number, departure, arrival, booking_id, boarding_point, seats, price } = ticketGroup;
 
@@ -171,6 +172,7 @@ const Tickets = () => {
   return (
     <>
       <Navbar />
+      <ToastContainer />
       <div className="tickets-container">
         <h1 className="tickets-header">Your Bus Tickets</h1>
         {Object.keys(groupedTickets).map(key => {

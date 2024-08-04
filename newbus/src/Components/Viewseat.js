@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Addseat } from '../redux/busprice';
 import Footer from './Footer';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Viewseat() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -66,12 +67,16 @@ export default function Viewseat() {
   const handleSeatClick = (seatId) => {
     if (!occupied.includes(seatId)) {
       if (selectedSeats.length >= 8 && !selectedSeats.includes(seatId)) {
-        alert('You can select only 8 seats');
+    toast.error('You can select only 8 seats',{
+      autoclose:900
+    });
       } else {
         dispatch(Addseat(seatId));
       }
     } else {
-      alert('Seat already booked');
+      toast.error('Seat already booked',{
+        autoclose:900
+      });
     }
   };
 
@@ -87,6 +92,8 @@ export default function Viewseat() {
   return (
     <div>
       <Navbar />
+      
+      <ToastContainer />
       <div className="contain">
         <div className="busseat">
           <div className="driver">

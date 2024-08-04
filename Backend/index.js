@@ -43,21 +43,23 @@ app.use(express.json());
     function generateToken(email) {
         return jwt.sign({ email }, 'adminlogin', { expiresIn: '1h' });
       }
-    const authenticate = (req, res, next) => {
+      const authenticate = (req, res, next) => {
         const token = req.cookies.token;
-        console.log(token)
+        console.log('Token from cookie:', token); // Debugging line
+      
         if (!token) {
-            return res.status(401).json({ message: 'Unauthorized' });
+          return res.status(401).json({ message: 'Unauthorized' });
         }
-    
+      
         jwt.verify(token, 'rams', (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-            req.user = decoded;
-            next();
+          if (err) {
+            console.error('Token verification failed:', err.message); // Debugging line
+            return res.status(401).json({ message: 'Unauthorized' });
+          }
+          req.user = decoded;
+          next();
         });
-    };
+      };
     const verifyAdminToken = (req, res, next) => {
         const token = req.cookies.admintoken; 
         console.log(token);
@@ -299,45 +301,48 @@ app.use(express.json());
         });
         app.post('/login', (req, res) => {
             const { email, password } = req.body;
-        
+          
             // Retrieve user by email
             connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
-                if (err) {
-                    return res.status(500).json({ error: 'Database query error: ' + err.message });
-                }
-        
-                // Check if user exists
-                if (result.length === 0) {
-                    return res.status(401).json({ message: 'Invalid email or password' });
-                }
-        
-                const user = result[0];
-        
-                // Compare password with hashed password
-                bcrypt.compare(password, user.user_password, (err, isMatch) => {
-                    if (err) {
-                        return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
-                    }
-        
-                    if (isMatch) {
+              if (err) {
+                return res.status(500).json({ error: 'Database query error: ' + err.message });
+              }
           
-                        const accessToken = jwt.sign({ email: user.user_email }, 'your_jwt_secret_key', { expiresIn: '1h' });
-                        
-                     
-                        res.cookie('token', accessToken, {
-                            httpOnly: true,
-                            secure: false,  
-                            sameSite: 'lax',
-                            expires: new Date(Date.now() + 144000000)  
-                        });
-        
-                        return res.status(200).json({ token: accessToken });
-                    } else {
-                        return res.status(401).json({ message: 'Invalid email or password' });
-                    }
-                });
+              // Check if user exists
+              if (result.length === 0) {
+                return res.status(401).json({ message: 'Invalid email or password' });
+              }
+          
+              const user = result[0];
+          
+              // Compare password with hashed password
+              bcrypt.compare(password, user.user_password, (err, isMatch) => {
+                if (err) {
+                  return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
+                }
+          
+                if (isMatch) {
+                  const accessToken = jwt.sign({ email: user.user_email }, 'rams', { expiresIn: '40h' });
+          
+                  res.cookie('token', accessToken, {
+                    httpOnly: true,
+                    secure: false, // Change to true if using HTTPS
+                    sameSite: 'lax',
+                    expires: new Date(Date.now() + 144000000) // 40 hours
+                  });
+          
+                  return res.status(200).json({ token: accessToken });
+                } else {
+                  return res.status(401).json({ message: 'Invalid email or password' });
+                }
+              });
             });
-        });
+          });
+          
+          
+          app.post('/getsuseremail', authenticate, (req, res) => {
+            res.json({ email: req.user.email });
+          });
    
     app.post('/create-checkout-session',authenticate, async (req, res) => {
         const { selectedSeats, price } = req.body;
@@ -468,7 +473,7 @@ connection.query(query,[travel_id],(err,result)=>{
     }
 })
     })
-
+   
     
     app.get('/admin/cities', verifyAdminToken, (req, res) => {
         const query = 'SELECT * FROM cities';

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import '../CSS/Otp.css';
 import { useNavigate } from 'react-router-dom';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Enterotp() {
     const [email, setEmail] = useState('');
-    const [error, setError] = useState(''); // State to manage error messages
-    const [isAuthorized, setIsAuthorized] = useState(false); // State to check if user is authorized
+    const [error, setError] = useState(''); 
+    const [isAuthorized, setIsAuthorized] = useState(false); 
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,7 +17,7 @@ export default function Enterotp() {
             setEmail(emailParam);
         }
 
-        // Check if token is valid on component mount
+      
         const checkToken = async () => {
             try {
                 const res = await fetch('http://localhost:8000/tokencheck', {
@@ -25,7 +26,7 @@ export default function Enterotp() {
                 });
 
                 if (!res.ok) {
-                    // Token is invalid or not present
+                 
                     setError('Please log in first.');
                     setIsAuthorized(false);
                     return;
@@ -60,14 +61,20 @@ export default function Enterotp() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(data.message);
-                navigate(`/changepassword?email=${email}`);
+                toast.success(data.message, {
+                    autoClose: 600, 
+                    onClose: () => {
+                        setTimeout(() => {
+                            navigate(`/changepassword?email=${email}`);
+                        }, 0.5);  
+                    }})
+               
             } else {
                 const errorData = await res.json();
                 if (res.status === 401) {
-                    setError('Please log in first.'); // Set error message for 401 status
+                    setError('Please log in first.'); 
                 } else {
-                    setError(errorData.message); // Set other error messages
+                    setError(errorData.message); 
                 }
             }
         } catch (error) {
@@ -79,6 +86,7 @@ export default function Enterotp() {
     return (
         <div>
             <Navbar />
+            <ToastContainer />
             <div className="enterotp-container">
                 {isAuthorized ? (
                     <form className="enterotp-form" method='post' onSubmit={handlesubmit}>

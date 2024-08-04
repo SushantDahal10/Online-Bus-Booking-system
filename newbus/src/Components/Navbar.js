@@ -4,7 +4,8 @@ import { RiCustomerServiceLine } from "react-icons/ri";
 import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Navbar.css';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Navbar() {
   const [showAccount, setShowAccount] = useState(false);
   const [loggedin, setLoggedin] = useState(false);
@@ -44,8 +45,15 @@ export default function Navbar() {
 
       if (response.ok) {
         setLoggedin(false);
-        alert('Successfully logged out');
-        navigate('/');
+        toast.success('Successfully logged out', {
+          autoClose: 600, 
+          onClose: () => {
+              setTimeout(() => {
+                  navigate('/');
+              }, 0.02);  
+          }
+      });
+       
       } else {
         console.log('Signout failed');
       }
@@ -56,6 +64,7 @@ export default function Navbar() {
 
   return (
     <div>
+            <ToastContainer />
       <nav className='navbar'>
         <div className='logo' onClick={() => navigate('/')}>
           <LuBus />

@@ -3,6 +3,8 @@ import '../CSS/Passwordchange.css';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Passwordchange() {
     const [email, setEmail] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -24,8 +26,8 @@ export default function Passwordchange() {
                 }
 
                 const data = await res.json();
-                console.log('Token is valid:', data);
-                setEmail(data.email); // Set email if needed
+              
+                setEmail(data.email); 
                 setIsAuthorized(true);
             } catch (err) {
                 console.error('Error checking token:', err);
@@ -43,7 +45,9 @@ export default function Passwordchange() {
         const reenterPassword = document.getElementById('reenter-password').value;
 
         if (password !== reenterPassword) {
-            alert("Passwords do not match");
+        toast.error("Passwords do not match",{
+            autoClose:900
+        });
             return;
         }
 
@@ -57,15 +61,26 @@ export default function Passwordchange() {
 
             if (res.ok) {
                 const data = await res.json();
-                alert(data.message);
-                navigate('/login');
+                toast.success('Successfully logged in', {
+                    autoClose: 700, 
+                    onClose: () => {
+                        setTimeout(() => {
+                            navigate('/login');
+                        }, 0.02);  
+                    }
+                });
+               
             } else {
                 const errorData = await res.json();
-                alert(errorData.message);
+                toast.error(errorData.message,{
+                    autoClose:900
+                });
             }
         } catch (err) {
             console.log(err);
-            alert('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.',{
+                autoClose:900
+            });
         }
     }
 
@@ -100,6 +115,7 @@ export default function Passwordchange() {
                         <input type="password" id="reenter-password" name="reenter-password" required />
                     </div>
                     <button type="submit">Submit</button>
+                    <ToastContainer />
                 </form>
             </div>
         </>

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import '../CSS/Forgotpass.css';
 import { useNavigate } from 'react-router-dom';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 export default function Forgotpass() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState(''); // State to manage error messages
@@ -10,7 +11,7 @@ export default function Forgotpass() {
   const navigate = useNavigate(); 
 
   useEffect(() => {
-    // Check if admin token is valid on component mount
+
     const checkAdminToken = async () => {
       try {
         const res = await fetch('http://localhost:8000/admintokencheck', {
@@ -19,7 +20,7 @@ export default function Forgotpass() {
         });
 
         if (!res.ok) {
-          // Token is invalid or not present
+        
           setError('Please log in first.');
           setIsAuthorized(false);
           return;
@@ -57,8 +58,15 @@ export default function Forgotpass() {
       if (response.ok) {
         setMessage(data.message);
         if (response.status === 202) {
-          alert('OTP sent to your email');
-          navigate(`/otp?email=${email}`); 
+          toast.success('OTP sent to your email', {
+            autoClose: 600, 
+            onClose: () => {
+                setTimeout(() => {
+                  navigate(`/otp?email=${email}`);
+                }, 0.5);  
+            }
+        });
+        
           const otp = Math.floor(100000 + Math.random() * 900000).toString();
           const otpObj = { email, otp };
 
@@ -79,6 +87,7 @@ export default function Forgotpass() {
   return (
     <div>
       <Navbar />
+      <ToastContainer />
       <div className="forgotpass-container">
         {isAuthorized ? (
           <form className="forgotpass-form" method="post" onSubmit={handlesubmit}>

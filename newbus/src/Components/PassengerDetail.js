@@ -4,7 +4,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const PassengerDetails = () => {
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
   const params = new URLSearchParams(window.location.search);
@@ -69,7 +70,9 @@ const PassengerDetails = () => {
     
     passenger.forEach((value, index) => {
       if (value.age < 1) {
-        alert("Age should be greater than 1");
+        toast.error("Age should be greater than 1",{
+          autoClose:900
+        });
         return;
       }
     });
@@ -101,6 +104,7 @@ const PassengerDetails = () => {
       });
 
       if (response.ok) {
+        toast.success('redirecting...')
         const session = await response.json();
         const result = await stripe.redirectToCheckout({
           sessionId: session.id
@@ -110,11 +114,15 @@ const PassengerDetails = () => {
         }
       } else {
         const errorText = await response.text();
-        alert('Unexpected error: ' + errorText);
+        toast.error('Unexpected error: ' + errorText,{
+          autoClose:900
+        });
       }
     } catch (error) {
       console.error('An error occurred:', error);
-      alert('An error occurred: ' + error.message);
+      toast.error('An error occurred: ' + error.message,{
+        autoClose:900
+      });
     }
   };
 
@@ -127,6 +135,7 @@ const PassengerDetails = () => {
   return (
     <div>
       <Navbar />
+      <ToastContainer />
       <div className="passenger-details-container">
         {isAuthorized ? (
           <div className="container">
