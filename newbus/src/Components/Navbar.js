@@ -4,8 +4,10 @@ import { RiCustomerServiceLine } from "react-icons/ri";
 import { MdAccountCircle } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Navbar.css';
+import logo from '../Components/Images/download.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 export default function Navbar() {
   const [showAccount, setShowAccount] = useState(false);
   const [loggedin, setLoggedin] = useState(false);
@@ -46,14 +48,13 @@ export default function Navbar() {
       if (response.ok) {
         setLoggedin(false);
         toast.success('Successfully logged out', {
-          autoClose: 600, 
+          autoClose: 600,
           onClose: () => {
-              setTimeout(() => {
-                  navigate('/');
-              }, 0.02);  
+            setTimeout(() => {
+              navigate('/');
+            }, 0.02);
           }
-      });
-       
+        });
       } else {
         console.log('Signout failed');
       }
@@ -64,11 +65,11 @@ export default function Navbar() {
 
   return (
     <div>
-            <ToastContainer />
+      <ToastContainer />
       <nav className='navbar'>
         <div className='logo' onClick={() => navigate('/')}>
-          <LuBus />
-          <span>Bus</span>
+          <img src={logo} alt="Logo" />
+       
         </div>
         <div className="nav-items">
           <div className='nav-item'>
@@ -89,7 +90,7 @@ export default function Navbar() {
                 <>
                   <div onClick={handleSignout}>Sign Out</div>
                   <div onClick={() => navigate('/yourticket')}>Tickets</div>
-                  <div onClick={() => navigate('/')}>Home</div> 
+                  <div onClick={() => navigate('/')}>Home</div>
                 </>
               )}
             </div>

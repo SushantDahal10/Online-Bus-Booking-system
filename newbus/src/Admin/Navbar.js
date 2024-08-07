@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
-import './Admincss/Navbar.css';
+import './Admincss/Navbar.css'; // Ensure this path is correct
+import logo from './download.png'; // Ensure this path is correct
 import { useNavigate } from 'react-router-dom';
 
 export default function Navbar({ handleSectionChange }) {
@@ -64,6 +65,9 @@ export default function Navbar({ handleSectionChange }) {
 
   return (
     <div className="navbar">
+      <div className="nav-item">
+        <img src={logo} className='llogo' alt="Logo"  onClick={()=>navigate('/admin/dashboard')}/>
+      </div>
       <div className="nav-item" onClick={() => handleSectionChange('dashboard')}>Dashboard</div>
       <div className="nav-item" onClick={() => handleSectionChange('bus')}>Bus Details</div>
       <div className="nav-item" onClick={() => handleSectionChange('travel')}>Travel Details</div>

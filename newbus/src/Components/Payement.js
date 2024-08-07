@@ -28,15 +28,7 @@
           else{
             alert('please login first')
             navigate('/login')
-            // toast.error('Please login first', {
-            //   autoClose: 700, 
-            //   onClose: () => {
-            //       setTimeout(() => {
-            //           navigate('/login');
-            //       }, 0.02);  
-            //   }
-             
-          // });
+            
            
           }
         } catch (error) {

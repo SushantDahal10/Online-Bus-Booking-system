@@ -9,7 +9,7 @@ export default function Forgotpass() {
   const [error, setError] = useState(''); // State to manage error messages
   const [isAuthorized, setIsAuthorized] = useState(false); // State to check if user is authorized
   const navigate = useNavigate(); 
-
+  const [em,setem]=useState(false)
   useEffect(() => {
 
     const checkAdminToken = async () => {
@@ -40,6 +40,7 @@ export default function Forgotpass() {
   }, []);
 
   const handlesubmit = async (e) => {
+    setem(true)
     e.preventDefault();
     setMessage(''); 
 
@@ -96,7 +97,7 @@ export default function Forgotpass() {
               <label htmlFor="email">Email</label>
               <input type="email" id="email" name="email" required />
             </div>
-            <button type="submit">Send Mail</button>
+            <button type="submit" disabled={em}>Send Mail</button>
             {message && <p className="message">{message}</p>}
           </form>
         ) : (

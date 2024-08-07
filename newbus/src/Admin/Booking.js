@@ -93,6 +93,7 @@ export default function Booking() {
                         <th>Date of Travel</th>
                         <th>Bus Number</th>
                         <th>Bus Name</th>
+                        <th>Date of Booking</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,6 +114,7 @@ export default function Booking() {
                             <td>{booking.date_of_travel.split('T')[0]}</td>
                             <td>{booking.bus_number}</td>
                             <td>{booking.bus_name}</td>
+                            <td>{booking.date_of_booking.split('T')[0]}</td>
                         </tr>
                     ))}
                 </tbody>

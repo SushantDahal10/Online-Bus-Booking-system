@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 const PassengerDetails = () => {
   const selectedSeats = useSelector(state => state.busprice.selectedSeats);
   const params = new URLSearchParams(window.location.search);
@@ -31,7 +32,7 @@ const PassengerDetails = () => {
   useEffect(() => {
     const checkAdminToken = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/tokencheck`, {
           method: 'GET',
           credentials: 'include'
         });
@@ -66,18 +67,21 @@ const PassengerDetails = () => {
   };
 
   const makePayment = async () => {
+    if (!isAuthorized) {
+      toast.error('Unauthorized. Please log in first.');
+      return;
+    }
+
     passenger.forEach((value, index) => {
       if (value.age < 1) {
-        toast.error("Age should be greater than 1",{
-          autoClose:900
+        toast.error("Age should be greater than 1", {
+          autoClose: 900
         });
-        
-        return ;
+        return;
       }
     });
+
     const stripe = await loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
-    
-   
 
     const objs = {
       travel_id: travel_id,
@@ -106,7 +110,7 @@ const PassengerDetails = () => {
       });
 
       if (response.ok) {
-        toast.success('redirecting...')
+        toast.success('Redirecting...');
         const session = await response.json();
         const result = await stripe.redirectToCheckout({
           sessionId: session.id
@@ -116,14 +120,14 @@ const PassengerDetails = () => {
         }
       } else {
         const errorText = await response.text();
-        toast.error('Unexpected error: ' + errorText,{
-          autoClose:900
+        toast.error('Unexpected error: ' + errorText, {
+          autoClose: 900
         });
       }
     } catch (error) {
       console.error('An error occurred:', error);
-      toast.error('An error occurred: ' + error.message,{
-        autoClose:900
+      toast.error('An error occurred: ' + error.message, {
+        autoClose: 900
       });
     }
   };
@@ -149,49 +153,49 @@ const PassengerDetails = () => {
                 </h3>
                 <div className="form-group">
                   <label htmlFor={`name_${index}`}>Seat <strong className='seat-number'>{value}</strong></label>
-                  <input 
-                    type="text" 
-                    id={`name_${index}`} 
-                    name='name' 
-                    placeholder="Name" 
-                    value={passenger[index].name} 
-                    onChange={(e) => handlePassenger(index, 'name', e.target.value)} 
-                    required 
+                  <input
+                    type="text"
+                    id={`name_${index}`}
+                    name='name'
+                    placeholder="Name"
+                    value={passenger[index].name}
+                    onChange={(e) => handlePassenger(index, 'name', e.target.value)}
+                    required
                   />
                 </div>
                 <div className="form-group">
                   <label>Gender</label>
                   <div className="radio-group">
-                    <input 
-                      type="radio" 
-                      id={`male_${index}`} 
-                      name={`gender_${index}`} 
-                      value="male" 
-                      onChange={(e) => handlePassenger(index, 'gender', e.target.value)} 
-                      required 
+                    <input
+                      type="radio"
+                      id={`male_${index}`}
+                      name={`gender_${index}`}
+                      value="male"
+                      onChange={(e) => handlePassenger(index, 'gender', e.target.value)}
+                      required
                     />
                     <label htmlFor={`male_${index}`}>Male</label>
-                    <input 
-                      type="radio" 
-                      id={`female_${index}`} 
-                      name={`gender_${index}`} 
-                      value="female" 
-                      onChange={(e) => handlePassenger(index, 'gender', e.target.value)} 
-                      required 
+                    <input
+                      type="radio"
+                      id={`female_${index}`}
+                      name={`gender_${index}`}
+                      value="female"
+                      onChange={(e) => handlePassenger(index, 'gender', e.target.value)}
+                      required
                     />
                     <label htmlFor={`female_${index}`}>Female</label>
                   </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor={`age_${index}`}>Age</label>
-                  <input 
-                    type="number" 
-                    id={`age_${index}`} 
-                    name='age' 
-                    placeholder="Age" 
-                    value={passenger[index].age} 
-                    onChange={(e) => handlePassenger(index, 'age', e.target.value)} 
-                    required 
+                  <input
+                    type="number"
+                    id={`age_${index}`}
+                    name='age'
+                    placeholder="Age"
+                    value={passenger[index].age}
+                    onChange={(e) => handlePassenger(index, 'age', e.target.value)}
+                    required
                   />
                 </div>
               </div>
@@ -204,13 +208,13 @@ const PassengerDetails = () => {
               <p className="info-text">You can download your ticket through website from the top right account icon</p>
               <div className="form-group">
                 <label htmlFor="email">Email ID</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  name='contactemail' 
-                  placeholder="Email ID" 
-                  onChange={(e) => handleContactChange('contactemail', e.target.value)} 
-                  required 
+                <input
+                  type="email"
+                  id="email"
+                  name='contactemail'
+                  placeholder="Email ID"
+                  onChange={(e) => handleContactChange('contactemail', e.target.value)}
+                  required
                 />
               </div>
               <div className="form-group">
@@ -219,13 +223,13 @@ const PassengerDetails = () => {
                   <select id="phone-code">
                     <option value="+91">+91</option>
                   </select>
-                  <input 
-                    type="tel" 
-                    id="phone" 
-                    placeholder="Phone" 
-                    name='phone' 
-                    onChange={(e) => handleContactChange('phone', e.target.value)} 
-                    required 
+                  <input
+                    type="tel"
+                    id="phone"
+                    placeholder="Phone"
+                    name='phone'
+                    onChange={(e) => handleContactChange('phone', e.target.value)}
+                    required
                   />
                 </div>
               </div>

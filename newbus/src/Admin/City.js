@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Admincss/City.css';
+import { ToastContainer, toast } from 'react-toastify';
 import Navbar from './Navbar';
 import ConfirmationModal from './Confirmdelete';
 export default function City() {
@@ -45,7 +46,7 @@ export default function City() {
             alert('City name cannot be empty');
             return;
         }
-
+    
         try {
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/cities`, {
                 method: 'POST',
@@ -55,39 +56,45 @@ export default function City() {
                 credentials: 'include',
                 body: JSON.stringify({ city_name: newCity })
             });
-
+    
             if (res.status === 201) {
                 const data = await res.json();
-                setCities([...cities, data.result]);
+                setCities([...cities, data.result]); // Ensure data.result has city_id
                 setNewCity('');
+                toast.success('City added', {
+                    autoClose: 600
+                });
             } else if (res.status === 401) {
                 setUnauthorized(true);
             } else {
-                alert('Failed to add city');
+                toast.error('Failed to add city', {
+                    autoClose: 600
+                });
             }
         } catch (err) {
             console.error('Error adding city:', err);
         }
     };
-    const  handleDeleteCity = (bus_number) => {
-        setBusToDelete(bus_number);
+    
+    const handleDeleteCity = (city_id) => {
+        setBusToDelete(city_id);
         setShowModal(true);
     };
    
     const confirmDelete = async () => {
-        setShowModal(false)
+        setShowModal(false);
         try {
             const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/cities/${busToDelete}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
-
+    
             if (res.status === 200) {
                 setCities(cities.filter(city => city.city_id !== busToDelete));
             } else if (res.status === 401) {
                 setUnauthorized(true);
             } else {
-                alert('Failed to delete city');
+                toast.error('Failed to delete city', { autoClose: 600 });
             }
         } catch (err) {
             console.error('Error deleting city:', err);
@@ -120,6 +127,7 @@ export default function City() {
 
     return (
         <>
+        <ToastContainer/>
             <div className="city-container">
                 <Navbar handleSectionChange={handleSectionChange} />
                 <br />
@@ -146,7 +154,7 @@ export default function City() {
                         <tr>
                             <th>City Name</th>
                             <th>Actions</th>
-                        </tr>
+                        </tr>   
                     </thead>
                     <tbody>
                         {filteredCities.map((city, index) => (

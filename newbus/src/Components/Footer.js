@@ -1,22 +1,23 @@
 import React from 'react';
-import '../CSS/Footer.css'; // Make sure to create this CSS file
+import '../CSS/Footer.css'; 
 import { LuBus } from "react-icons/lu";
 import { FaFacebookSquare } from "react-icons/fa";
 import { GrInstagram } from "react-icons/gr";
 import { FaSquareXTwitter } from "react-icons/fa6";
+import logo from '../Components/Images/download.png';
 export default function Footer() {
     return (
         <footer className="footer">
             <div className="footer-container">
                 <div className="footer-logo-section">
-                    <LuBus className="footer-logo" />
+                    <img className="footer-logo" src={logo} />
                     <p>
-                        New Bus is the online bus ticket booking service, trusted by customers globally. New Bus offers bus ticket booking through its website  for all major routes.
+                        QuickBus is the online bus ticket booking service, trusted by customers globally. New Bus offers bus ticket booking through its website  for all major routes.
                     </p>
                 </div>
                 <div className="footer-links-section">
                     <div className="footer-column">
-                        <h3>About New Bus</h3>
+                        <h3>About QuickBus</h3>
                         <ul>
                             <li><a href="#">About us</a></li>
                             <li><a href="#">Investor Relations</a></li>
@@ -47,7 +48,7 @@ export default function Footer() {
                 </div>
             </div>
             <div className="footer-bottom">
-                <p>© 2024 New Bus Pvt Ltd. All rights reserved</p>
+                <p>© 2024 Quick Bus Pvt Ltd. All rights reserved</p>
                 <div className="footer-social-icons">
                     <a href="#"><FaFacebookSquare  className="fab fa-facebook-f"/></a>
                     <a href="#"><GrInstagram className="fab fa-instagram"/></a>

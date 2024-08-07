@@ -8,6 +8,11 @@
   align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+.llogo {
+  width: 60px; /* Adjust width as needed */
+  height: auto; /* Maintain aspect ratio */
+}
+
 
 /* Navigation items container */
 .nav-items {

@@ -13,7 +13,7 @@ export default function Success() {
     useEffect(() => {
           const checkAuthorization = async () => {
               try {
-                  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
+                  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/tokencheck`, {
                       method: 'GET',
                       credentials: 'include',
                   });
