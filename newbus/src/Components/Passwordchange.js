@@ -14,7 +14,7 @@ export default function Passwordchange() {
     useEffect(() => {
         const checkAdminToken = async () => {
             try {
-                const res = await fetch('http://localhost:8000/admintokencheck', {
+                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -53,7 +53,7 @@ export default function Passwordchange() {
 
         try {
             const obj = { email, password };
-            const res = await fetch('http://localhost:8000/passwordchange', {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/passwordchange`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(obj)

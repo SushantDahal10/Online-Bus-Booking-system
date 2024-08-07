@@ -12,7 +12,7 @@ export default function Booking() {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const res = await fetch('http://localhost:8000/bookings', {
+                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/bookings`, {
                     credentials: 'include'
                 });
 

@@ -11,7 +11,7 @@ export default function Navbar({ handleSectionChange }) {
   useEffect(() => {
     const checkToken = async () => {
       try {
-        const response = await fetch('http://localhost:8000/admintokencheck', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export default function Navbar({ handleSectionChange }) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:8000/admin/logout', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

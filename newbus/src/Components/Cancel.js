@@ -8,7 +8,7 @@ export default function Cancel() {
   useEffect(() => {
     setTimeout(() => {
       navigate('/viewseat');
-    }, 5000); // Redirect to /viewseat after 5 seconds
+    }, 5000); 
   }, [navigate]);
 
   return (

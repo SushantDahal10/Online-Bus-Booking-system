@@ -20,7 +20,7 @@ export default function Enterotp() {
       
         const checkToken = async () => {
             try {
-                const res = await fetch('http://localhost:8000/tokencheck', {
+                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/tokencheck`, {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -52,7 +52,7 @@ export default function Enterotp() {
         try {
             const otp = document.getElementById('otp').value;
             const obj = { otp, email };
-            const res = await fetch('http://localhost:8000/verifyotp', {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/verifyotp`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(obj),

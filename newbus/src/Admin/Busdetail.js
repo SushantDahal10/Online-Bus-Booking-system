@@ -27,7 +27,7 @@ export default function BusDetail() {
 
     const fetchBusDetails = async () => {
         try {
-            const res = await fetch('http://localhost:8000/busdetail', {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/busdetail`, {
                 credentials: 'include'
             });
 
@@ -53,7 +53,7 @@ export default function BusDetail() {
     const handleAdd = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:8000/busadd', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/busadd`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -79,7 +79,7 @@ export default function BusDetail() {
 
     const handleUpdate = async (bus_number) => {
         try {
-            const response = await fetch(`http://localhost:8000/busupdate?bus_number=${bus_number}`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/busupdate?bus_number=${bus_number}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -116,7 +116,7 @@ export default function BusDetail() {
 
     const confirmDelete = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/deletebus?bus_number=${busToDelete}`, {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deletebus?bus_number=${busToDelete}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

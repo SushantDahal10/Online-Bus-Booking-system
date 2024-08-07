@@ -25,7 +25,7 @@ export default function Main() {
 
     const fetchCities = async () => {
         try {
-            const res = await fetch('http://localhost:8000/cities');
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/cities`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setCities(data);

@@ -5,6 +5,7 @@
     const moment = require('moment');
     const bcrypt = require('bcrypt');
 const saltRounds = 10;
+require('dotenv').config();
     const multer = require('multer');
     const storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -19,7 +20,7 @@ const saltRounds = 10;
     const path = require('path');
     const bodyParser = require('body-parser');
     const session = require('express-session');
-    const stripe = require('stripe')('sk_test_51Pdc9DH8027hl3xprnBWhHLydYMFz29tB1GVqqN4LOxYNsgl5cVMoJrM4zgLePhTO0SpoFaaUx69mpVpCTcgtzmp00XhMZf2ff', {
+    const stripe = require('stripe')(process.env.STRIPE_KEY_BACKEND, {
         apiVersion: '2020-08-27',
     });
     const jwt=require('jsonwebtoken')
@@ -28,12 +29,12 @@ let temporarydata={};
 
 app.use(express.json()); 
     app.use(cors({
-        origin: 'http://localhost:3000',
+        origin: process.env.FRONTEND_URL,
         credentials: true
     }));
     app.use(bodyParser.json());
     app.use(session({
-        secret: 'rams', 
+        secret: process.env.SECRET_KEY_USER, 
         resave: false,
         saveUninitialized: true,
         cookie: { secure: false } 
@@ -41,19 +42,19 @@ app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
     function generateToken(email) {
-        return jwt.sign({ email }, 'adminlogin', { expiresIn: '1h' });
+        return jwt.sign({ email }, process.env.SECRET_KEY_ADMIN, { expiresIn: '1h' });
       }
       const authenticate = (req, res, next) => {
         const token = req.cookies.token;
-        console.log('Token from cookie:', token); // Debugging line
+       
       
         if (!token) {
           return res.status(401).json({ message: 'Unauthorized' });
         }
       
-        jwt.verify(token, 'rams', (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
           if (err) {
-            console.error('Token verification failed:', err.message); // Debugging line
+            console.error('Token verification failed:', err.message); 
             return res.status(401).json({ message: 'Unauthorized' });
           }
           req.user = decoded;
@@ -67,7 +68,7 @@ app.use(express.json());
             return res.status(401).json({ message: 'Unauthorized' });
         }
     
-        jwt.verify(token, 'adminlogin', (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
             if (err) {
                 return res.status(401).json({ message: 'Unauthorized' });
             }
@@ -95,7 +96,7 @@ app.use(express.json());
         const { email, password } = req.body;
       
        
-        if (email === 'sushantdahal733@gmail.com' && password === '12345') {
+        if (email === process.env.ADMIN_EMAIL && password ===process.env.ADMIN_PASS ) {
       
           const token = generateToken(email);
      
@@ -157,13 +158,13 @@ app.use(express.json());
           port: 587,
           secure: false,
           auth: {
-            user: 'holidaily933@gmail.com',
-            pass: 'wgpc klqg sfwc dlod',
+            user: process.env.EMAIL_SEND,
+            pass: process.env.EMAIL_APP_PASS,
           },
         });
       
         const mailOptions = {
-          from: 'holidaily933@gmail.com',
+          from: process.env.EMAIL_SEND,
           to: email,
           subject: 'Your Bus Ticket',
           text: 'Please find your bus ticket attached.',
@@ -266,7 +267,7 @@ app.use(express.json());
             const { email, password } = req.body;
         
             try {
-                // Check if email already exists
+              
                 connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
                     if (err) {
                         console.error('Error selecting from database:', err);
@@ -277,7 +278,7 @@ app.use(express.json());
                         return res.status(400).json({ message: 'Email already exists' });
                     }
         
-                    // Hash the password
+                   
                     bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
                         if (err) {
                             console.error('Error hashing password:', err);
@@ -302,33 +303,33 @@ app.use(express.json());
         app.post('/login', (req, res) => {
             const { email, password } = req.body;
           
-            // Retrieve user by email
+         
             connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
               if (err) {
                 return res.status(500).json({ error: 'Database query error: ' + err.message });
               }
           
-              // Check if user exists
+             
               if (result.length === 0) {
                 return res.status(401).json({ message: 'Invalid email or password' });
               }
           
               const user = result[0];
           
-              // Compare password with hashed password
+             
               bcrypt.compare(password, user.user_password, (err, isMatch) => {
                 if (err) {
                   return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
                 }
           
                 if (isMatch) {
-                  const accessToken = jwt.sign({ email: user.user_email }, 'rams', { expiresIn: '40h' });
+                  const accessToken = jwt.sign({ email: user.user_email }, process.env.SECRET_KEY_USER, { expiresIn: '40h' });
           
                   res.cookie('token', accessToken, {
                     httpOnly: true,
-                    secure: false, // Change to true if using HTTPS
+                    secure: false,
                     sameSite: 'lax',
-                    expires: new Date(Date.now() + 144000000) // 40 hours
+                    expires: new Date(Date.now() + 144000000) 
                   });
           
                   return res.status(200).json({ token: accessToken });
@@ -366,8 +367,8 @@ app.use(express.json());
                     },
                 ],
                 mode: 'payment',
-                success_url: `http://localhost:3000/payment/success?seats=${selectedSeats}`,
-                cancel_url: 'http://localhost:3000/payment/failed',
+                success_url: `${process.env.FRONTEND_URL}/payment/success?seats=${selectedSeats}`,
+                cancel_url: `${process.env.FRONTEND_URL}/payment/failed`,
             });
 
             res.json({ id: session.id });
@@ -383,7 +384,7 @@ app.use(express.json());
         const { travel_id, passenger, contactDetails, price } = req.body;
         const token = req.cookies.token;
       
-        jwt.verify(token, 'rams', (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
           if (err) {
             return res.status(401).json({ message: 'Unauthorized' });
           }
@@ -652,7 +653,7 @@ app.get('/bookings',verifyAdminToken,(req,res)=>{
 })
 app.post('/getbusid',verifyAdminToken, (req, res) => {
     const { bus_number } = req.body;
-    console.log(req.body);
+  
 
     if (!bus_number) {
         return res.status(400).json({ error: 'Bus number is required' });
@@ -687,7 +688,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
 })})
     app.post('/getsuseremail',authenticate,(req,res)=>{
         const token = req.cookies.token;
-        jwt.verify(token, 'rams', (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
             if (err) {
                 return res.status(401).json({ message: 'Unauthorized' });
             }
@@ -698,7 +699,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
     })
     app.post('/gettickets',authenticate,(req,res)=>{
         const token = req.cookies.token;
-        jwt.verify(token, 'rams', (err, decoded) => {
+        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
             if (err) {
                 return res.status(401).json({ message: 'Unauthorized' });
             }
@@ -758,8 +759,8 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
           port: 587,
           secure: false,
           auth: {
-            user: 'holidaily933@gmail.com',
-            pass: 'wgpc klqg sfwc dlod',
+            user: process.env.EMAIL_SEND,
+            pass: process.env.EMAIL_APP_PASS,
           },
         });
       
@@ -796,8 +797,7 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
       })
     app.post('/passwordchange',authenticate,(req,res)=>{
         const {email,password}=req.body
-        console.log(email)
-        console.log(password)
+      
         connection.query('UPDATE user SET user_password=? where user_email=?',[password,email],(err,result)=>{
             if(err) {
                 res.status(400).json({message:'cant change password'})
@@ -844,8 +844,8 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
                 port: 587,
                 secure: false,
                 auth: {
-                    user: 'holidaily933@gmail.com',
-                    pass: 'wgpc klqg sfwc dlod',
+                    user: process.env.EMAIL_SEND,
+                    pass: process.env.EMAIL_APP_PASS,
                 },
             });
     

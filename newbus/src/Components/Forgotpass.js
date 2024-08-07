@@ -14,7 +14,7 @@ export default function Forgotpass() {
 
     const checkAdminToken = async () => {
       try {
-        const res = await fetch('http://localhost:8000/admintokencheck', {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
           method: 'GET',
           credentials: 'include'
         });
@@ -47,7 +47,7 @@ export default function Forgotpass() {
       const email = document.getElementById('email').value;
       const obj = { email };
 
-      const response = await fetch('http://localhost:8000/verifyemail', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/verifyemail`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(obj),
@@ -70,7 +70,7 @@ export default function Forgotpass() {
           const otp = Math.floor(100000 + Math.random() * 900000).toString();
           const otpObj = { email, otp };
 
-          await fetch('http://localhost:8000/sendemail', {
+          await fetch(`${process.env.REACT_APP_BACKEND_URL}/sendemail`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(otpObj),

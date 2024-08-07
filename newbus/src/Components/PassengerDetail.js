@@ -31,7 +31,7 @@ const PassengerDetails = () => {
   useEffect(() => {
     const checkAdminToken = async () => {
       try {
-        const res = await fetch('http://localhost:8000/admintokencheck', {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
           method: 'GET',
           credentials: 'include'
         });
@@ -66,16 +66,18 @@ const PassengerDetails = () => {
   };
 
   const makePayment = async () => {
-    const stripe = await loadStripe('pk_test_51Pdc9DH8027hl3xphO6wu8p3QUyUOuLdajGQg0G2zaYHCdegyqRPQjf1UQPQ2ARjLxiS7LS8Wp6eNB4B7RbOvtp200ZqO1nKQZ');
-    
     passenger.forEach((value, index) => {
       if (value.age < 1) {
         toast.error("Age should be greater than 1",{
           autoClose:900
         });
-        return;
+        
+        return ;
       }
     });
+    const stripe = await loadStripe(`${process.env.REACT_APP_STRIPE_KEY}`);
+    
+   
 
     const objs = {
       travel_id: travel_id,
@@ -96,7 +98,7 @@ const PassengerDetails = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/create-checkout-session', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/create-checkout-session`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(body),

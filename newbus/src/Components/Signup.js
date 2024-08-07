@@ -47,7 +47,7 @@ export default function Signup() {
         };
 
         try {
-            const response = await fetch('http://localhost:8000/signup', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(obj)
@@ -71,7 +71,7 @@ export default function Signup() {
         const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a random 6-digit OTP
         setOtp(generatedOtp);
 
-        const response = await fetch('http://localhost:8000/sendSignupOtp', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/sendSignupOtp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp: generatedOtp })
@@ -107,7 +107,7 @@ export default function Signup() {
         const email = document.getElementById('email').value;
         const enteredOtp = document.getElementById('otp').value;
 
-        const otpVerificationResponse = await fetch('http://localhost:8000/verifySignupOtp', {
+        const otpVerificationResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/verifySignupOtp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, otp: enteredOtp })

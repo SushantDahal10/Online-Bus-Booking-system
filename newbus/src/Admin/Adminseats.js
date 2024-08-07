@@ -17,7 +17,7 @@ export default function Adminseats() {
       };
 
       try {
-        const response = await fetch('http://localhost:8000/bookingstatus', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/bookingstatus`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ export default function Navbar() {
   useEffect(() => {
     const handleAccount = async () => {
       try {
-        const response = await fetch('http://localhost:8000/getsuseremail', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getsuseremail`, {
           method: 'POST',
           headers: { "Content-Type": "application/json" },
           credentials: 'include',
@@ -37,7 +37,7 @@ export default function Navbar() {
 
   const handleSignout = async () => {
     try {
-      const response = await fetch('http://localhost:8000/signout', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/signout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -6,6 +6,7 @@ import Footer from './Footer';
 import '../CSS/Login.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/login', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/login`, {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(obj),

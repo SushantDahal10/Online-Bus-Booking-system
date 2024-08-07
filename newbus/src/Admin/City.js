@@ -15,7 +15,7 @@ export default function City() {
     useEffect(() => {
         const fetchCities = async () => {
             try {
-                const res = await fetch('http://localhost:8000/admin/cities', {
+                const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/cities`, {
                     credentials: 'include'
                 });
 
@@ -47,7 +47,7 @@ export default function City() {
         }
 
         try {
-            const res = await fetch('http://localhost:8000/admin/cities', {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/cities`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -77,7 +77,7 @@ export default function City() {
     const confirmDelete = async () => {
         setShowModal(false)
         try {
-            const res = await fetch(`http://localhost:8000/admin/cities/${busToDelete}`, {
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/cities/${busToDelete}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

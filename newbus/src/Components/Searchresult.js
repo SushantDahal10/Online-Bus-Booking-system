@@ -31,7 +31,7 @@ export default function Searchresult() {
     };
     const fetchCities = async () => {
         try {
-            const res = await fetch('http://localhost:8000/cities');
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/cities`);
             const data = await res.json();
 
             if (Array.isArray(data)) {
@@ -55,7 +55,7 @@ export default function Searchresult() {
                 return;
             }
 
-            const res = await fetch(`http://localhost:8000/alltravel?from=${from}&to=${to}&date=${date}`);
+            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/alltravel?from=${from}&to=${to}&date=${date}`);
             if (!res.ok) {
                 throw new Error('Network response was not ok');
             }

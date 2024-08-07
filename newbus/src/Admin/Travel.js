@@ -47,7 +47,7 @@
     }
     const fetchCities = async () => {
       try {
-        const res = await fetch('http://localhost:8000/cities', {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/cities`, {
           credentials: 'include'
         });
 
@@ -70,7 +70,7 @@
 
     const fetchBusDetails = async () => {
       try {
-        const res = await fetch('http://localhost:8000/busdetail', {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/busdetail`, {
           credentials: 'include'
         });
 
@@ -91,7 +91,7 @@
 
     const fetchTravelDetails = async () => {
       try {
-        const res = await fetch('http://localhost:8000/traveldetail', {
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/traveldetail`, {
           credentials: 'include'
         });
 
@@ -140,7 +140,7 @@
     const handleAdd = async (e) => {
       e.preventDefault();
       try {
-        const response = await fetch('http://localhost:8000/getbusid', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getbusid`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bus_number: formData.bus_number }),
@@ -157,7 +157,7 @@
           const bus_id = data.result.bus_id;
           const travelData = { ...formData, bus_id };
 
-          await fetch('http://localhost:8000/admin/travel', {
+          await fetch(`${process.env.REACT_APP_BACKEND_URL}/admin/travel`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(travelData),
@@ -193,7 +193,7 @@
     const handleUpdate = async (travel_id) => {
       viewseat(!seat)
       try {
-        const response = await fetch('http://localhost:8000/getbusid', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/getbusid`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bus_number: formData.bus_number }),
@@ -210,7 +210,7 @@
           const bus_id = data.result.bus_id;
           const travelData = { ...formData, bus_id };
 
-          const updateResponse = await fetch(`http://localhost:8000/travelupdate?travel_id=${travel_id}`, {
+          const updateResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/travelupdate?travel_id=${travel_id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(travelData),
@@ -260,7 +260,7 @@
     const confirmDelete = async () => {
     setShowModal(false)
       try {
-        const response = await fetch(`http://localhost:8000/deletetravel?travel_id=${busToDelete}`, {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/deletetravel?travel_id=${busToDelete}`, {
           method: 'DELETE',
           credentials: 'include'
         });

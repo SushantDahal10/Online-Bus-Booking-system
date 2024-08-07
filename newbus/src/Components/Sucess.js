@@ -13,7 +13,7 @@ export default function Success() {
     useEffect(() => {
           const checkAuthorization = async () => {
               try {
-                  const response = await fetch('http://localhost:8000/admintokencheck', {
+                  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admintokencheck`, {
                       method: 'GET',
                       credentials: 'include',
                   });
@@ -43,7 +43,7 @@ export default function Success() {
             }
 
             try {
-                const response = await fetch('http://localhost:8000/savepassengerdetails', {
+                const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/savepassengerdetails`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -16,7 +16,7 @@ const Dashboard = ({ setUnauthorized }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/admindetail', {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/admindetail`, {
           credentials: 'include'
         });
 
@@ -28,7 +28,7 @@ const Dashboard = ({ setUnauthorized }) => {
         const data = await response.json();
         setDashboardData(data.result[0]);
 
-        const operatorResponse = await fetch('http://localhost:8000/totaloperators', {
+        const operatorResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/totaloperators`, {
           credentials: 'include'
         });
 
@@ -40,7 +40,7 @@ const Dashboard = ({ setUnauthorized }) => {
         const operatorData = await operatorResponse.json();
         setTotalBus(operatorData.result[0].totaloperator);
 
-        const cityResponse = await fetch('http://localhost:8000/totalcities', {
+        const cityResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/totalcities`, {
           credentials: 'include'
         });
 

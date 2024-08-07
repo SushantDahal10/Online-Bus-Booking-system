@@ -18,7 +18,7 @@
     const makePayment = () => {
       const checkToken = async () => {
         try {
-            const response = await fetch('http://localhost:8000/tokencheck', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/tokencheck`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -26,14 +26,17 @@
             navigate(`/passengerdetail?price=${price}&travel_id=${paymentdetail.travel_id}&date_of_travel=${paymentdetail.date_of_travel}`);
           }
           else{
-            toast.error('Please login first', {
-              autoClose: 700, 
-              onClose: () => {
-                  setTimeout(() => {
-                      navigate('/login');
-                  }, 0.02);  
-              }
-          });
+            alert('please login first')
+            navigate('/login')
+            // toast.error('Please login first', {
+            //   autoClose: 700, 
+            //   onClose: () => {
+            //       setTimeout(() => {
+            //           navigate('/login');
+            //       }, 0.02);  
+            //   }
+             
+          // });
            
           }
         } catch (error) {
