@@ -908,6 +908,6 @@ app.get('/totaloperators',verifyAdminToken,(req,res)=>{
         res.status(200).json({ message: 'OTP verified successfully' });
     });
     
-    app.listen(8000, () => {
+    app.listen(process.env.PORT, () => {
         console.log('Server started on port 8000');
     });
