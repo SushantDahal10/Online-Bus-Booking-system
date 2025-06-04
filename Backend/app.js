@@ -849,7 +849,7 @@ app.post('/verifyemail', authenticate, (req, res) => {
             res.status(200).send('Signed out successfully.');
         });
     });
-    const temporaryData1 = {};
+    
     const checkEmailExists = (email, callback) => {
         connection.query('SELECT user_email FROM user WHERE user_email = ?', [email], (error, results) => {
             if (error) {
