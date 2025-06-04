@@ -37,7 +37,8 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['set-cookie']
 }));
 app.use(bodyParser.json());
 app.use(session({
@@ -66,15 +67,19 @@ function generateUserToken(email) {
 // Authentication middleware
 const authenticate = (req, res, next) => {
     const token = req.cookies.token;
-
+    
     if (!token) {
+        console.log('No token found in cookies');
         return res.status(401).json({ message: 'Unauthorized - No token provided' });
     }
 
     jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
         if (err) {
             console.error('Token verification failed:', err.message); 
-            return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+            return res.status(401).json({ 
+                message: 'Unauthorized - Invalid token',
+                error: err.message 
+            });
         }
         req.user = decoded;
         console.log('Token verified successfully:', decoded); 
@@ -344,42 +349,50 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
 
     connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
         if (err) {
-            console.error('Database query error:', err);
-            return res.status(500).json({ error: 'Database query error: ' + err.message });
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database query error' });
         }
-
+        
         if (result.length === 0) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
         const user = result[0];
-
+        
         bcrypt.compare(password, user.user_password, (err, isMatch) => {
             if (err) {
-                console.error('Error comparing passwords:', err);
-                return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
+                console.error('Bcrypt error:', err);
+                return res.status(500).json({ error: 'Error comparing passwords' });
             }
 
-            if (isMatch) {
-                const accessToken = generateUserToken(user.user_email);
-
-                res.cookie('token', accessToken, {
-                    httpOnly: true,
-                    secure: isProduction,
-                    sameSite: isProduction ? 'none' : 'lax',
-                    maxAge: 144000000
-                });
-
-                return res.status(200).json({ 
-                    message: 'Login successful',
-                    token: accessToken 
-                });
-            } else {
+            if (!isMatch) {
                 return res.status(401).json({ message: 'Invalid email or password' });
             }
+
+            const accessToken = jwt.sign(
+                { email: user.user_email }, 
+                process.env.SECRET_KEY_USER, 
+                { expiresIn: '40h' }
+            );
+
+            res.cookie('token', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // true in production
+                sameSite: 'none',
+                maxAge: 144000000
+            });
+
+            return res.status(200).json({ 
+                message: 'Login successful',
+                token: accessToken 
+            });
         });
     });
 });
@@ -852,62 +865,56 @@ app.post('/verifyemail', authenticate, (req, res) => {
     
 
     
-    app.post('/sendSignupOtp', (req, res) => {
+    app.post('/sendSignupOtp', async (req, res) => {
+    try {
         const { email, otp } = req.body;
-    
-        checkEmailExists(email, (error, exists) => {
-            if (error) {
-                return res.status(500).json({ message: 'Database error' });
-            }
-            if (exists) {
-                return res.status(400).json({ message: 'Email already exists' });
-            }
-    
-           
-            temporaryData1[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
-    
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                host: 'smtp.gmail.com',
-                port: 587,
-                secure: false,
-                auth: {
-                    user: process.env.EMAIL_SEND,
-                    pass: process.env.EMAIL_APP_PASS,
-                },
-            });
-    
-            transporter.sendMail({
-                from: '"QuickBus Pvt. Ltd" <holidaily933@gmail.com>',
-                to: email,
-                subject: 'Your OTP Code for Signup',
-                text: `Hello,
-    
-    We received a request to sign up with this email. Your OTP code is ${otp}.
-    
-    Please use this code to complete your signup process.
-    
-    If you did not request this, please ignore this email.
-    
-    Best regards,
-   QuickBus Pvt. Ltd.`,
-                html: `
-                  <p>Hello,</p>
-                  <p>We received a request to sign up with this email. Your OTP code is <strong>${otp}</strong>.</p>
-                  <p>Please use this code to complete your signup process.</p>
-                  <p>If you did not request this, please ignore this email.</p>
-                  <p>Best regards,<br />QuickBus Pvt. Ltd.</p>
-                `,
-            }, (error, info) => {
-                if (error) {
-                    console.error('Error sending email:', error);
-                    return res.status(500).json({ message: 'Failed to send OTP email' });
-                }
-                console.log('Message sent: %s', info.messageId);
-                res.status(200).json({ message: 'OTP email sent successfully' });
+        
+        if (!email || !otp) {
+            return res.status(400).json({ message: 'Email and OTP are required' });
+        }
+
+        const emailExists = await new Promise((resolve, reject) => {
+            checkEmailExists(email, (error, exists) => {
+                if (error) reject(error);
+                resolve(exists);
             });
         });
-    });
+
+        if (emailExists) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
+
+        temporaryData1[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_SEND,
+                pass: process.env.EMAIL_APP_PASS,
+            },
+        });
+
+        await transporter.sendMail({
+            from: '"QuickBus Pvt. Ltd" <holidaily933@gmail.com>',
+            to: email,
+            subject: 'Your OTP Code for Signup',
+            text: `Hello,\n\nWe received a request to sign up with this email. Your OTP code is ${otp}.\n\nPlease use this code to complete your signup process.\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nQuickBus Pvt. Ltd.`,
+            html: `<p>Hello,</p><p>We received a request to sign up with this email. Your OTP code is <strong>${otp}</strong>.</p><p>Please use this code to complete your signup process.</p><p>If you did not request this, please ignore this email.</p><p>Best regards,<br />QuickBus Pvt. Ltd.</p>`
+        });
+
+        console.log('OTP email sent to:', email);
+        res.status(200).json({ message: 'OTP email sent successfully' });
+    } catch (error) {
+        console.error('Error in sendSignupOtp:', error);
+        res.status(500).json({ 
+            message: 'Failed to send OTP email',
+            error: error.message 
+        });
+    }
+});
     app.post('/verifySignupOtp', (req, res) => {
         const { email, otp } = req.body;
     
