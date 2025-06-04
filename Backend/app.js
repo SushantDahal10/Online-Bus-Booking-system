@@ -850,14 +850,7 @@ app.post('/verifyemail', authenticate, (req, res) => {
         });
     });
     
-    const checkEmailExists = (email, callback) => {
-        connection.query('SELECT user_email FROM user WHERE user_email = ?', [email], (error, results) => {
-            if (error) {
-                return callback(error);
-            }
-            callback(null, results.length > 0);
-        });
-    };
+
     
     app.post('/sendSignupOtp', (req, res) => {
         const { email, otp } = req.body;
