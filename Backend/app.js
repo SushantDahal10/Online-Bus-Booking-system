@@ -3,7 +3,7 @@
         const connection = require('./connection'); 
         const cors = require('cors');
         const moment = require('moment');
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
     const saltRounds = 10;
     require('dotenv').config();
         const multer = require('multer');
