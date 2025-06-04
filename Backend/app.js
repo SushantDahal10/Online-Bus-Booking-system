@@ -1,628 +1,668 @@
-        const express = require('express');
-        const app = express();
-        const connection = require('./connection'); 
-        const cors = require('cors');
-        const moment = require('moment');
-        const bcrypt = require('bcryptjs');
-    const saltRounds = 10;
-    require('dotenv').config();
-        const multer = require('multer');
-        const storage = multer.diskStorage({
-            destination: (req, file, cb) => {
-            cb(null, 'uploads/');
-            },
-            filename: (req, file, cb) => {
-            cb(null, file.originalname);
-            }
-        });
-        const upload = multer({ storage });
-        const nodemailer = require("nodemailer");
-        const path = require('path');
-        const bodyParser = require('body-parser');
-        const session = require('express-session');
-        const stripe = require('stripe')(process.env.STRIPE_KEY_BACKEND, {
-            apiVersion: '2020-08-27',
-        });
-        const jwt=require('jsonwebtoken')
-        const cookieParser = require('cookie-parser');
-    let temporarydata={};
+const express = require('express');
+const app = express();
+const connection = require('./connection'); 
+const cors = require('cors');
+const moment = require('moment');
+const bcrypt = require('bcryptjs');
+const saltRounds = 10;
+require('dotenv').config();
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
+const upload = multer({ storage });
+const nodemailer = require("nodemailer");
+const path = require('path');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const stripe = require('stripe')(process.env.STRIPE_KEY_BACKEND, {
+    apiVersion: '2020-08-27',
+});
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
-    app.use(express.json());    
-        app.use(cors({
-            origin: process.env.FRONTEND_URL,
-            credentials: true
-        }));
-        app.use(bodyParser.json());
-        app.use(session({
-            secret: process.env.SECRET_KEY_USER, 
-            resave: false,
-            saveUninitialized: true,
-            cookie: { secure: false } 
-        }));
-        app.use(express.urlencoded({ extended: true }));
-        app.use(cookieParser());
-        function generateToken(email) {
-            return jwt.sign({ email }, process.env.SECRET_KEY_ADMIN, { expiresIn: '5h' });
+let temporarydata = {};
+const temporaryData1 = {};
+
+// Determine if we're in production
+const isProduction = process.env.NODE_ENV === 'production';
+
+app.use(express.json());    
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+app.use(bodyParser.json());
+app.use(session({
+    secret: process.env.SECRET_KEY_USER, 
+    resave: false,
+    saveUninitialized: false, // Changed to false for security
+    cookie: { 
+        secure: isProduction, // Use secure cookies in production
+        httpOnly: true,
+        maxAge: 144000000,
+        sameSite: isProduction ? 'none' : 'lax' // Adjust for cross-origin in production
+    } 
+}));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Utility functions
+function generateToken(email) {
+    return jwt.sign({ email }, process.env.SECRET_KEY_ADMIN, { expiresIn: '5h' });
+}
+
+function generateUserToken(email) {
+    return jwt.sign({ email }, process.env.SECRET_KEY_USER, { expiresIn: '40h' });
+}
+
+// Authentication middleware
+const authenticate = (req, res, next) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized - No token provided' });
+    }
+
+    jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
+        if (err) {
+            console.error('Token verification failed:', err.message); 
+            return res.status(401).json({ message: 'Unauthorized - Invalid token' });
         }
-        const authenticate = (req, res, next) => {
-            const token = req.cookies.token;
-        
-        
-            if (!token) {
-            return res.status(401).json({ message: 'Unauthorized' });
-            }
-        
-            jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
-            if (err) {
-                console.error('Token verification failed:', err.message); 
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-            req.user = decoded;
-            console.log('Token verified successfully:', decoded); 
-            next();
-            });
-        };
-        const verifyAdminToken = (req, res, next) => {
-            const token = req.cookies.admintoken; 
-            console.log(token);
-            if (!token) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-        
-            jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
-                if (err) {
-                    return res.status(401).json({ message: 'Unauthorized' });
-                }
-                req.email = decoded.email; 
-                next();
-            });
-        };
-        
-        app.get('/tokencheck', authenticate, (req, res) => {
-            res.status(200).json({ message: 'Token is valid', email: req.user.email });
-        });
-        app.post('/admin/logout', (req, res) => {
-        res.clearCookie('admintoken'); 
-        req.session.destroy(err => {
-            if (err) {
-                return res.status(500).send('Failed to sign out.');
-            }
-            res.status(200).send('Signed out successfully.');
-        });
+        req.user = decoded;
+        console.log('Token verified successfully:', decoded); 
+        next();
     });
-        app.get('/admintokencheck', verifyAdminToken, (req, res) => {
-        res.status(200).json({ message: 'Token is valid', email: req.email });
-    });
-      app.post('/adminlogin', (req, res) => {
-        const { email, password } = req.body;
-      
-       
-        if (email === process.env.ADMIN_EMAIL && password ===process.env.ADMIN_PASS ) {
-      
-          const token = generateToken(email);
-     
-          res.cookie('admintoken', token, { httpOnly: true, secure: true, maxAge: 144000000 }); 
-          res.status(200).json({ message: 'Login successful' });
-        } else {
-          res.status(401).json({ error: 'Invalid email or password' });
+};
+
+const verifyAdminToken = (req, res, next) => {
+    const token = req.cookies.admintoken; 
+    console.log('Admin token:', token);
+    
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized - No admin token provided' });
+    }
+
+    jwt.verify(token, process.env.SECRET_KEY_ADMIN, (err, decoded) => {
+        if (err) {
+            console.error('Admin token verification failed:', err.message);
+            return res.status(401).json({ message: 'Unauthorized - Invalid admin token' });
         }
-      });
-      app.get('/protectedadmin', verifyAdminToken, (req, res) => {
-        res.status(200).json({ message: 'This is a protected route', email: req.email });
-      });
-    app.get('/protected-route',  authenticate, (req, res) => {
-        res.json({ message: 'This is a protected route', user: req.user });
+        req.email = decoded.email; 
+        next();
     });
-    app.post('/admin/bus',verifyAdminToken, (req, res) => {
-        console.log(req.body);
-        const { bus_number, bus_name, contactno, capacity } = req.body;
+};
+
+// Helper function to check email existence
+const checkEmailExists = (email, callback) => {
+    connection.query('SELECT user_email FROM user WHERE user_email = ?', [email], (error, results) => {
+        if (error) {
+            return callback(error);
+        }
+        callback(null, results.length > 0);
+    });
+};
+
+// Routes
+app.get('/tokencheck', authenticate, (req, res) => {
+    res.status(200).json({ message: 'Token is valid', email: req.user.email });
+});
+
+app.post('/admin/logout', (req, res) => {
+    res.clearCookie('admintoken', {
+        secure: isProduction,
+        httpOnly: true,
+        sameSite: isProduction ? 'none' : 'lax'
+    }); 
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Failed to sign out.');
+        }
+        res.status(200).send('Signed out successfully.');
+    });
+});
+
+app.get('/admintokencheck', verifyAdminToken, (req, res) => {
+    res.status(200).json({ message: 'Token is valid', email: req.email });
+});
+
+app.post('/adminlogin', (req, res) => {
+    const { email, password } = req.body;
+
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASS) {
+        const token = generateToken(email);
         
-        connection.query(
-            'INSERT INTO busdetail (bus_number, bus_name, contactno, capacity) VALUES (?, ?, ?, ?)',
-            [bus_number, bus_name, contactno, capacity],
-            (err, result) => {
-                if (err) {
-                    console.error(err);
-                    res.status(500).send('Error inserting bus data');
-                    return;
-                }
-                console.log('Bus Insert successful:', result);
-                res.send('Bus Insert Success');
-            }
-        );
-    });
-    app.get('/traveldetail',verifyAdminToken,(req,res)=>{
-        connection.query('SELECT t.*,b.bus_number from travel t JOIN busdetail b ON t.bus_id=b.bus_id',(err,result)=>{
-            if(err){
+        res.cookie('admintoken', token, { 
+            httpOnly: true, 
+            secure: isProduction, 
+            maxAge: 144000000,
+            sameSite: isProduction ? 'none' : 'lax'
+        }); 
+        res.status(200).json({ message: 'Login successful' });
+    } else {
+        res.status(401).json({ error: 'Invalid email or password' });
+    }
+});
+
+app.get('/protectedadmin', verifyAdminToken, (req, res) => {
+    res.status(200).json({ message: 'This is a protected route', email: req.email });
+});
+
+app.get('/protected-route', authenticate, (req, res) => {
+    res.json({ message: 'This is a protected route', user: req.user });
+});
+
+app.post('/admin/bus', verifyAdminToken, (req, res) => {
+    console.log(req.body);
+    const { bus_number, bus_name, contactno, capacity } = req.body;
+    
+    connection.query(
+        'INSERT INTO busdetail (bus_number, bus_name, contactno, capacity) VALUES (?, ?, ?, ?)',
+        [bus_number, bus_name, contactno, capacity],
+        (err, result) => {
+            if (err) {
                 console.error(err);
+                res.status(500).send('Error inserting bus data');
+                return;
             }
-            else{
-                res.status(200).json({result:result})
-            }
-        })
-    })
- 
-    app.post('/sendemailticket', authenticate, upload.single('file'), async (req, res) => {
-        console.log('Received file:', req.file);
-        console.log('Request body:', req.body);
-      
-        
-        const { email } = req.body;
-        if (!email || !req.file) {
-          return res.status(400).send('Email or file not provided');
+            console.log('Bus Insert successful:', result);
+            res.send('Bus Insert Success');
         }
-      
-        const filePath = path.join(__dirname, 'uploads', req.file.filename);
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: {
+    );
+});
+
+app.get('/traveldetail', verifyAdminToken, (req, res) => {
+    connection.query('SELECT t.*,b.bus_number from travel t JOIN busdetail b ON t.bus_id=b.bus_id', (err, result) => {
+        if (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
+        }
+    });
+});
+
+app.post('/sendemailticket', authenticate, upload.single('file'), async (req, res) => {
+    console.log('Received file:', req.file);
+    console.log('Request body:', req.body);
+
+    const { email } = req.body;
+    if (!email || !req.file) {
+        return res.status(400).send('Email or file not provided');
+    }
+
+    const filePath = path.join(__dirname, 'uploads', req.file.filename);
+    const transporter = nodemailer.createTransporter({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
             user: process.env.EMAIL_SEND,
             pass: process.env.EMAIL_APP_PASS,
-          },
-        });
-      
-        const mailOptions = {
-          from: process.env.EMAIL_SEND,
-          to: email,
-          subject: 'Your Bus Ticket',
-          text: 'Please find your bus ticket attached.',
-          attachments: [{ path: filePath }],
-        };
-      
-        try {
-          await transporter.sendMail(mailOptions);
-          res.status(200).send('Email sent successfully');
-        } catch (error) {
-          console.error('Error sending email:', error);
-          res.status(500).send('Failed to send email');
-        }
-      });
+        },
+    });
 
+    const mailOptions = {
+        from: process.env.EMAIL_SEND,
+        to: email,
+        subject: 'Your Bus Ticket',
+        text: 'Please find your bus ticket attached.',
+        attachments: [{ path: filePath }],
+    };
 
-    app.put('/travelupdate',verifyAdminToken, (req, res) => {
-        const { travel_id } = req.query;
-        const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_number } = req.body;
-      
-       
-        const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_number = ?';
-        connection.query(checkBusQuery, [bus_number], (err, busResult) => {
-          if (err) {
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).send('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).send('Failed to send email');
+    }
+});
+
+app.put('/travelupdate', verifyAdminToken, (req, res) => {
+    const { travel_id } = req.query;
+    const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_number } = req.body;
+
+    const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_number = ?';
+    connection.query(checkBusQuery, [bus_number], (err, busResult) => {
+        if (err) {
             return res.status(500).json({ error: 'Database query error' });
-          }
-      
-          if (busResult.length === 0) {
+        }
+
+        if (busResult.length === 0) {
             return res.status(404).json({ error: 'Bus number not found' });
-          }
-      
-          const bus_id = busResult[0].bus_id;
-          const capacity=busResult[0].capacity
-      
-          const updateTravelQuery = `
+        }
+
+        const bus_id = busResult[0].bus_id;
+        const capacity = busResult[0].capacity;
+
+        const updateTravelQuery = `
             UPDATE travel 
-            SET source = ?, destination = ?, departure = ?, arrival = ?, fare = ?, duration = ?, bus_id = ?, date_of_travel = ?,seats_available=?
+            SET source = ?, destination = ?, departure = ?, arrival = ?, fare = ?, duration = ?, bus_id = ?, date_of_travel = ?, seats_available = ?
             WHERE travel_id = ?
-          `;
-      
-          connection.query(updateTravelQuery, [source, destination, departure, arrival, fare, duration, bus_id, date_of_travel, travel_id,capacity], (err, result) => {
+        `;
+
+        connection.query(updateTravelQuery, [source, destination, departure, arrival, fare, duration, bus_id, date_of_travel, capacity, travel_id], (err, result) => {
             if (err) {
-              return res.status(500).json({ error: 'Database query error' });
+                return res.status(500).json({ error: 'Database query error' });
             }
-      
+
             if (result.affectedRows > 0) {
-              res.status(200).json({ message: 'Travel details updated successfully' });
+                res.status(200).json({ message: 'Travel details updated successfully' });
             } else {
-              res.status(404).json({ error: 'Travel record not found' });
+                res.status(404).json({ error: 'Travel record not found' });
             }
-          });
-        });
-      });
-      
-    
-
-
-      app.post('/admin/travel',verifyAdminToken, (req, res) => {
-        console.log(req.body);
-        const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_id } = req.body;
-    
-
-        const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_id = ?';
-        connection.query(checkBusQuery, [bus_id], (err, busResult) => {
-            if (err) {
-                console.error('Database query error:', err);
-                return res.status(500).send('Database query error');
-            }
-    
-            if (busResult.length === 0) {
-                return res.status(404).send("Bus doesn't exist");
-            }
-          const capacity=busResult[0].capacity;
-           
-            const insertTravelQuery = `
-                INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel, bus_id,seats_available) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
-            `;
-            connection.query(insertTravelQuery, [source, destination, fare, duration, departure, arrival, date_of_travel, bus_id,capacity], (err, result) => {
-                if (err) {
-                    console.error('Error inserting travel data:', err);
-                    return res.status(500).send('Error inserting travel data');
-                }
-                console.log('Travel Insert successful:', result);
-                res.send('Travel Insert Success');
-            });
         });
     });
-    
-      
-    app.delete('/deletetravel',verifyAdminToken,(req,res)=>{
-        const {travel_id}=req.query;
-        connection.query('DELETE FROM travel WHERE travel_id=?',[travel_id],(err,result)=>{
-            if(err){
-                console.error(err);
-            }
-            res.status(200).json({result:result})
-        })   })
-        app.post('/signup', async (req, res) => {
-            const { email, password } = req.body;
+});
+
+app.post('/admin/travel', verifyAdminToken, (req, res) => {
+    console.log(req.body);
+    const { source, destination, fare, duration, departure, arrival, date_of_travel, bus_id } = req.body;
+
+    const checkBusQuery = 'SELECT bus_id,capacity FROM busdetail WHERE bus_id = ?';
+    connection.query(checkBusQuery, [bus_id], (err, busResult) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).send('Database query error');
+        }
+
+        if (busResult.length === 0) {
+            return res.status(404).send("Bus doesn't exist");
+        }
         
-            try {
-              
-                connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
+        const capacity = busResult[0].capacity;
+
+        const insertTravelQuery = `
+            INSERT INTO travel (source, destination, fare, duration, departure, arrival, date_of_travel, bus_id, seats_available) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        connection.query(insertTravelQuery, [source, destination, fare, duration, departure, arrival, date_of_travel, bus_id, capacity], (err, result) => {
+            if (err) {
+                console.error('Error inserting travel data:', err);
+                return res.status(500).send('Error inserting travel data');
+            }
+            console.log('Travel Insert successful:', result);
+            res.send('Travel Insert Success');
+        });
+    });
+});
+
+app.delete('/deletetravel', verifyAdminToken, (req, res) => {
+    const { travel_id } = req.query;
+    connection.query('DELETE FROM travel WHERE travel_id=?', [travel_id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Database query error' });
+        }
+        res.status(200).json({ result: result });
+    });
+});
+
+app.post('/signup', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
+            if (err) {
+                console.error('Error selecting from database:', err);
+                return res.status(500).json({ error: 'Database selection error: ' + err.message });
+            }
+
+            if (result.length > 0) {
+                return res.status(400).json({ message: 'Email already exists' });
+            }
+
+            bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+                if (err) {
+                    console.error('Error hashing password:', err);
+                    return res.status(500).json({ error: 'Error hashing password: ' + err.message });
+                }
+
+                connection.query('INSERT INTO user (user_email, user_password) VALUES (?, ?)', [email, hashedPassword], (err, result) => {
                     if (err) {
-                        console.error('Error selecting from database:', err);
-                        return res.status(500).json({ error: 'Database selection error: ' + err.message });
+                        console.error('Error inserting into database:', err);
+                        return res.status(500).json({ error: 'Database insertion error: ' + err.message });
                     }
-        
-                    if (result.length > 0) {
-                        return res.status(400).json({ message: 'Email already exists' });
-                    }
-        
-                   
-                    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-                        if (err) {
-                            console.error('Error hashing password:', err);
-                            return res.status(500).json({ error: 'Error hashing password: ' + err.message });
-                        }
-        
-                       
-                        connection.query('INSERT INTO user (user_email, user_password) VALUES (?, ?)', [email, hashedPassword], (err, result) => {
-                            if (err) {
-                                console.error('Error inserting into database:', err);
-                                return res.status(500).json({ error: 'Database insertion error: ' + err.message });
-                            }
-                            return res.status(200).json({ message: 'Successfully registered' });
-                        });
-                    });
+                    return res.status(200).json({ message: 'Successfully registered' });
                 });
-            } catch (e) {
-                console.error('Error in signup process:', e);
-                res.status(500).json({ error: 'Server error: ' + e.message });
-            }
+            });
         });
-        app.post('/login', (req, res) => {
-            const { email, password } = req.body;
-          
-         
-            connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
-              if (err) {
-                return res.status(500).json({ error: 'Database query error: ' + err.message });
-              }
-          
-             
-              if (result.length === 0) {
-                return res.status(401).json({ message: 'Invalid email or password' });
-              }
-          
-              const user = result[0];
-          
-             
-              bcrypt.compare(password, user.user_password, (err, isMatch) => {
-                if (err) {
-                  return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
-                }
-          
-                if (isMatch) {
-                  const accessToken = jwt.sign({ email: user.user_email }, process.env.SECRET_KEY_USER, { expiresIn: '40h' });
-          
-                  res.cookie('token', accessToken, {
+    } catch (e) {
+        console.error('Error in signup process:', e);
+        res.status(500).json({ error: 'Server error: ' + e.message });
+    }
+});
+
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    connection.query('SELECT * FROM user WHERE user_email = ?', [email], (err, result) => {
+        if (err) {
+            console.error('Database query error:', err);
+            return res.status(500).json({ error: 'Database query error: ' + err.message });
+        }
+
+        if (result.length === 0) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const user = result[0];
+
+        bcrypt.compare(password, user.user_password, (err, isMatch) => {
+            if (err) {
+                console.error('Error comparing passwords:', err);
+                return res.status(500).json({ error: 'Error comparing passwords: ' + err.message });
+            }
+
+            if (isMatch) {
+                const accessToken = generateUserToken(user.user_email);
+
+                res.cookie('token', accessToken, {
                     httpOnly: true,
-                    secure: false,
-                    sameSite: 'lax',
-                    expires: new Date(Date.now() + 144000000) 
-                  });
-          
-                  return res.status(200).json({ token: accessToken });
-                } else {
-                  return res.status(401).json({ message: 'Invalid email or password' });
-                }
-              });
-            });
-          });
-          
-          
-          app.post('/getsuseremail', authenticate, (req, res) => {
-            res.status(200).json({ email: req.user.email });
-          });
-   
-    app.post('/create-checkout-session',authenticate, async (req, res) => {
-        const { selectedSeats, price } = req.body;
-        console.log(selectedSeats, price);
-        
-        try {
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [
-                    {
-                        price_data: {
-                            currency: 'inr',
-                            product_data: {
-                                name: 'Seat Reservation',
-                                description: `Seats: ${selectedSeats.join(', ')}`,
-                        
-                            },
-                            unit_amount: (price * 100)/selectedSeats.length,
+                    secure: isProduction,
+                    sameSite: isProduction ? 'none' : 'lax',
+                    maxAge: 144000000
+                });
+
+                return res.status(200).json({ 
+                    message: 'Login successful',
+                    token: accessToken 
+                });
+            } else {
+                return res.status(401).json({ message: 'Invalid email or password' });
+            }
+        });
+    });
+});
+
+app.post('/getsuseremail', authenticate, (req, res) => {
+    res.status(200).json({ email: req.user.email });
+});
+
+app.post('/create-checkout-session', authenticate, async (req, res) => {
+    const { selectedSeats, price } = req.body;
+    console.log(selectedSeats, price);
+    
+    try {
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'inr',
+                        product_data: {
+                            name: 'Seat Reservation',
+                            description: `Seats: ${selectedSeats.join(', ')}`,
                         },
-                        quantity: selectedSeats.length,
+                        unit_amount: Math.round((price * 100) / selectedSeats.length),
                     },
-                ],
-                mode: 'payment',
-                success_url: `${process.env.FRONTEND_URL}/payment/success?seats=${selectedSeats}`,
-                cancel_url: `${process.env.FRONTEND_URL}/payment/failed`,
-            });
+                    quantity: selectedSeats.length,
+                },
+            ],
+            mode: 'payment',
+            success_url: `${process.env.FRONTEND_URL}/payment/success?seats=${selectedSeats}`,
+            cancel_url: `${process.env.FRONTEND_URL}/payment/failed`,
+        });
 
-            res.json({ id: session.id });
-        } catch (error) {
-            console.error(error);
-            res.status(500).send('Error creating checkout session');
-        }
-    });
-   
-    app.post('/savepassengerdetails', (req, res) => {
-      console.log(req.body);
-  
-      const { travel_id, passenger, contactDetails, price } = req.body;
-      const token = req.cookies.token;
-  
-      jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
-          if (err) {
-              return res.status(401).json({ message: 'Unauthorized' });
-          }
-          const { email } = decoded;
-  
-          let hasError = false;
-          let processedCount = 0;
-  
-          connection.query('SELECT seats_available FROM travel WHERE travel_id = ?', [travel_id], (err, rows) => {
-              if (err) {
-                  console.error('Error fetching seats_available:', err);
-                  return res.status(500).json({ message: 'Error fetching travel details' });
-              }
-              const seat = rows[0].seats_available;
-  
-              const individualPrice = price / passenger.length;
-  
-              passenger.forEach((value) => {
-                  const query = 'SELECT * FROM booking WHERE travel_id = ? AND seat_no = ?';
-                  const values = [travel_id, value.seatnumber];
-  
-                  connection.query(query, values, (err, result) => {
-                      if (err) {
-                          console.error('Error checking passenger details:', err);
-                          hasError = true;
-                          return;
-                      }
-  
-                      if (result.length === 0) {
-                          const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no, price, date_of_booking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())';
-                          const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone, individualPrice];
-  
-                          connection.query(insertQuery, insertValues, (err) => {
-                              if (err) {
-                                  console.error('Error inserting passenger details:', err);
-                                  hasError = true;
-                              } else {
-                                  console.log('Passenger details saved');
-                              }
-                              processedCount++;
-  
-                              if (processedCount === passenger.length) {
-                                  if (hasError) {
-                                      return res.status(500).json({ message: 'Error saving some passenger details' });
-                                  } else {
-                                      connection.query('UPDATE travel SET seats_available = ? WHERE travel_id = ?', [seat - passenger.length, travel_id], (err) => {
-                                          if (err) {
-                                              console.error('Error updating seats_available:', err);
-                                          } else {
-                                              console.log('Seats available updated');
-                                          }
-  
-                                          res.status(200).json({ message: 'Passenger details saved successfully' });
-                                      });
-                                  }
-                              }
-                          });
-                      } else {
-                          console.log('Passenger details already exist');
-                          processedCount++;
-  
-                          if (processedCount === passenger.length) {
-                              if (hasError) {
-                                  return res.status(500).json({ message: 'Error saving some passenger details' });
-                              } else {
-                                  res.status(200).json({ message: 'Passenger details saved successfully' });
-                              }
-                          }
-                      }
-                  });
-              });
-          });
-      });
-  });
-  
-      
-      
-    
-    app.post('/bookingstatus',(req,res)=>{
-const {travel_id}=req.body
-const query = 'SELECT * FROM booking WHERE travel_id=?';
-connection.query(query,[travel_id],(err,result)=>{
-    if(err){
-        console.log(err);
+        res.json({ id: session.id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating checkout session');
     }
-    else{
-        res.status(200).json({result:result});
-    }
-})
-    })
-   
-    
-    app.get('/admin/cities', verifyAdminToken, (req, res) => {
-        const query = 'SELECT * FROM cities';
-        
-        connection.query(query, (err, result) => {
-            if (err) {
-                console.error('Error fetching cities:', err);
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else {
-                res.status(200).json({ result });
-            }
-        });
-    });
-    app.post('/admin/cities', verifyAdminToken, (req, res) => {
-        let { city_name } = req.body;
-    
-        if (!city_name || city_name.trim() === '') {
-            return res.status(400).json({ error: 'City name cannot be empty' });
+});
+
+app.post('/savepassengerdetails', authenticate, (req, res) => {
+    console.log(req.body);
+
+    const { travel_id, passenger, contactDetails, price } = req.body;
+    const email = req.user.email;
+
+    let hasError = false;
+    let processedCount = 0;
+
+    connection.query('SELECT seats_available FROM travel WHERE travel_id = ?', [travel_id], (err, rows) => {
+        if (err) {
+            console.error('Error fetching seats_available:', err);
+            return res.status(500).json({ message: 'Error fetching travel details' });
         }
-    
-        city_name = city_name.trim();
-        city_name = city_name.charAt(0).toUpperCase() + city_name.slice(1);
         
-        const query = 'INSERT INTO cities (city_name) VALUES (?)';
-    
-        connection.query(query, [city_name], (err, result) => {
-            if (err) {
-                console.error('Error adding city:', err);
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else {
-                res.status(201).json({ result: { city_name, city_id: result.insertId } });
-            }
-        });
-    });
-    
-    app.delete('/admin/cities/:id', verifyAdminToken, (req, res) => {
-        const { id } = req.params;
-    
-        const query = 'DELETE FROM cities WHERE city_id = ?';
-    
-        connection.query(query, [id], (err, result) => {
-            if (err) {
-                console.error('Error deleting city:', err);
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else if (result.affectedRows === 0) {
-                res.status(404).json({ error: 'City not found' });
-            } else {
-                res.status(200).json({ message: 'City deleted successfully' });
-            }
-        });
-    });
-    
-    
-    
-    app.get('/alltravel', (req, res) => {
-        const { from, to, date } = req.query;
-    
-    console.log(date)
-    
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Travel not found' });
+        }
+        
+        const seat = rows[0].seats_available;
+        const individualPrice = price / passenger.length;
 
+        passenger.forEach((value) => {
+            const query = 'SELECT * FROM booking WHERE travel_id = ? AND seat_no = ?';
+            const values = [travel_id, value.seatnumber];
 
-        connection.query(
-            'SELECT t.* ,b.bus_name,b.bus_number,b.capacity FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? AND t.date_of_travel=?',
-            [from, to, date],
-            (err, result) => {
+            connection.query(query, values, (err, result) => {
                 if (err) {
-                    console.error('Error fetching travel data:', err);
-                    res.status(500).send('Error fetching travel data');
+                    console.error('Error checking passenger details:', err);
+                    hasError = true;
                     return;
                 }
-                console.log('Travel Fetch successful:', result);
-                res.json(result); 
-            }
-        );
+
+                if (result.length === 0) {
+                    const insertQuery = 'INSERT INTO booking(travel_id, seat_no, booking_email, send_email, name, age, gender, phone_no, price, date_of_booking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())';
+                    const insertValues = [travel_id, value.seatnumber, email, contactDetails.contactemail, value.name, value.age, value.gender, contactDetails.phone, individualPrice];
+
+                    connection.query(insertQuery, insertValues, (err) => {
+                        if (err) {
+                            console.error('Error inserting passenger details:', err);
+                            hasError = true;
+                        } else {
+                            console.log('Passenger details saved');
+                        }
+                        processedCount++;
+
+                        if (processedCount === passenger.length) {
+                            if (hasError) {
+                                return res.status(500).json({ message: 'Error saving some passenger details' });
+                            } else {
+                                connection.query('UPDATE travel SET seats_available = ? WHERE travel_id = ?', [seat - passenger.length, travel_id], (err) => {
+                                    if (err) {
+                                        console.error('Error updating seats_available:', err);
+                                    } else {
+                                        console.log('Seats available updated');
+                                    }
+
+                                    res.status(200).json({ message: 'Passenger details saved successfully' });
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    console.log('Passenger details already exist');
+                    processedCount++;
+
+                    if (processedCount === passenger.length) {
+                        if (hasError) {
+                            return res.status(500).json({ message: 'Error saving some passenger details' });
+                        } else {
+                            res.status(200).json({ message: 'Passenger details saved successfully' });
+                        }
+                    }
+                }
+            });
+        });
     });
-app.get('/admindetail',verifyAdminToken,(req,res)=>{
-      connection.query('SELECT COUNT(*) AS bookingcount,SUM(price) as totalrevenue FROM booking',(err,result)=>{
-        if(err){
+});
+
+app.post('/bookingstatus', (req, res) => {
+    const { travel_id } = req.body;
+    const query = 'SELECT * FROM booking WHERE travel_id=?';
+    connection.query(query, [travel_id], (err, result) => {
+        if (err) {
             console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
         }
-        else{
-            res.status(200).json({result:result});
+    });
+});
+
+app.get('/admin/cities', verifyAdminToken, (req, res) => {
+    const query = 'SELECT * FROM cities';
+    
+    connection.query(query, (err, result) => {
+        if (err) {
+            console.error('Error fetching cities:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            res.status(200).json({ result });
         }
-      })
-})
-app.post('/getbuscapacity',(req, res) => {
-    const { bus_number } = req.body;
-    console.log(bus_number)
-    if (!bus_number) {
-      return res.status(400).json({ error: 'Bus number is required' });
+    });
+});
+
+app.post('/admin/cities', verifyAdminToken, (req, res) => {
+    let { city_name } = req.body;
+
+    if (!city_name || city_name.trim() === '') {
+        return res.status(400).json({ error: 'City name cannot be empty' });
     }
-  
-    connection.query('SELECT capacity FROM busdetail WHERE bus_number = ?', [bus_number], (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ error: 'Internal server error' });
-      }
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'Bus not found' });
-      }
-      res.status(200).json({ capacity: result[0].capacity });
+
+    city_name = city_name.trim();
+    city_name = city_name.charAt(0).toUpperCase() + city_name.slice(1);
+    
+    const query = 'INSERT INTO cities (city_name) VALUES (?)';
+
+    connection.query(query, [city_name], (err, result) => {
+        if (err) {
+            console.error('Error adding city:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else {
+            res.status(201).json({ result: { city_name, city_id: result.insertId } });
+        }
     });
-  });
-    app.get('/busdetail',verifyAdminToken,(req,res)=>{
-        connection.query('SELECT * FROM busdetail',(err,result)=>{
-        if(err){
+});
+
+app.delete('/admin/cities/:id', verifyAdminToken, (req, res) => {
+    const { id } = req.params;
+
+    const query = 'DELETE FROM cities WHERE city_id = ?';
+
+    connection.query(query, [id], (err, result) => {
+        if (err) {
+            console.error('Error deleting city:', err);
+            res.status(500).json({ error: 'Internal Server Error' });
+        } else if (result.affectedRows === 0) {
+            res.status(404).json({ error: 'City not found' });
+        } else {
+            res.status(200).json({ message: 'City deleted successfully' });
+        }
+    });
+});
+
+app.get('/alltravel', (req, res) => {
+    const { from, to, date } = req.query;
+
+    console.log(date);
+
+    connection.query(
+        'SELECT t.* ,b.bus_name,b.bus_number,b.capacity FROM travel t JOIN busdetail b ON t.bus_id=b.bus_id WHERE t.source=? AND t.destination=? AND t.date_of_travel=?',
+        [from, to, date],
+        (err, result) => {
+            if (err) {
+                console.error('Error fetching travel data:', err);
+                res.status(500).send('Error fetching travel data');
+                return;
+            }
+            console.log('Travel Fetch successful:', result);
+            res.json(result); 
+        }
+    );
+});
+
+app.get('/admindetail', verifyAdminToken, (req, res) => {
+    connection.query('SELECT COUNT(*) AS bookingcount,SUM(price) as totalrevenue FROM booking', (err, result) => {
+        if (err) {
             console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
         }
-        else{
-            res.status(200).json({result:result});
-        }
-        })
-    })  
-    app.get('/cities',(req,res)=>{
-        connection.query('select * from cities',(err,result)=>{
-            if(err){
-                console.log(err);
-            }
-            else{
-                res.status(200).json(result);
-            }
-        })
-    })
-    app.get('/totalcities',verifyAdminToken,(req,res)=>{
-        connection.query('select count(*) as countcity from cities',(err,result)=>{
-            if(err){
-                console.log(err);
-            }
-            else{
-                res.status(200).json({result:result});
-            }
-        })
-    })
-app.post('/busadd',verifyAdminToken,(req,res)=>{
-    console.log(req.body)
-    const{bus_number,bus_name,contactno,capacity}=req.body
-    connection.query('INSERT INTO busdetail(bus_number,bus_name,contactno,capacity) VALUES(?,?,?,?)',[bus_number,bus_name,contactno,capacity],(err,result)=>{
-        if(err){
+    });
+});
+
+app.post('/getbuscapacity', (req, res) => {
+    const { bus_number } = req.body;
+    console.log(bus_number);
+    
+    if (!bus_number) {
+        return res.status(400).json({ error: 'Bus number is required' });
+    }
+
+    connection.query('SELECT capacity FROM busdetail WHERE bus_number = ?', [bus_number], (err, result) => {
+        if (err) {
             console.log(err);
+            return res.status(500).json({ error: 'Internal server error' });
         }
-        else{
-            res.status(200).json({message:'succesfully inserted'})
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Bus not found' });
         }
-    })
-})
-app.put('/busupdate',verifyAdminToken, (req, res) => {
+        res.status(200).json({ capacity: result[0].capacity });
+    });
+});
+
+app.get('/busdetail', verifyAdminToken, (req, res) => {
+    connection.query('SELECT * FROM busdetail', (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
+        }
+    });
+});
+
+app.get('/cities', (req, res) => {
+    connection.query('select * from cities', (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json(result);
+        }
+    });
+});
+
+app.get('/totalcities', verifyAdminToken, (req, res) => {
+    connection.query('select count(*) as countcity from cities', (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
+        }
+    });
+});
+
+app.post('/busadd', verifyAdminToken, (req, res) => {
+    console.log(req.body);
+    const { bus_number, bus_name, contactno, capacity } = req.body;
+    
+    connection.query('INSERT INTO busdetail(bus_number,bus_name,contactno,capacity) VALUES(?,?,?,?)', [bus_number, bus_name, contactno, capacity], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database insertion error' });
+        } else {
+            res.status(200).json({ message: 'Successfully inserted' });
+        }
+    });
+});
+
+app.put('/busupdate', verifyAdminToken, (req, res) => {
     const { bus_number, bus_name, contactno, capacity } = req.body;
     const sql = 'UPDATE busdetail SET bus_name = ?, contactno = ?, capacity = ? WHERE bus_number = ?';
     
@@ -635,31 +675,35 @@ app.put('/busupdate',verifyAdminToken, (req, res) => {
         res.send('Bus detail updated successfully');
     });
 });
-app.delete('/deletebus',verifyAdminToken,(req,res)=>{
-    const{bus_number}=req.query
-connection.query('DELETE FROM busdetail WHERE bus_number=?',[bus_number],(err,result)=>{
-    if(err){
-        console.log(err);}
-        else{
-            res.status(200).json({message:'succesfully deleted'})
-        }
-})
 
-})
-app.get('/bookings',verifyAdminToken,(req,res)=>{
-    const query = 'SELECT b.booking_id, b.seat_no, b.booking_email, b.name, b.age, b.gender,b.date_of_booking, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id'
-    connection.query(query,(err,result)=>{
-      if(err){
-          console.log(err);
-      }
-      else{
-          res.status(200).json({result:result});
-      }
-    })
-})
-app.post('/getbusid',verifyAdminToken, (req, res) => {
+app.delete('/deletebus', verifyAdminToken, (req, res) => {
+    const { bus_number } = req.query;
+    
+    connection.query('DELETE FROM busdetail WHERE bus_number=?', [bus_number], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database deletion error' });
+        } else {
+            res.status(200).json({ message: 'Successfully deleted' });
+        }
+    });
+});
+
+app.get('/bookings', verifyAdminToken, (req, res) => {
+    const query = 'SELECT b.booking_id, b.seat_no, b.booking_email, b.name, b.age, b.gender,b.date_of_booking, b.phone_no, b.price, t.source, t.destination, t.fare, t.date_of_travel, bd.bus_number, bd.bus_name FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id';
+    
+    connection.query(query, (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
+        }
+    });
+});
+
+app.post('/getbusid', verifyAdminToken, (req, res) => {
     const { bus_number } = req.body;
-  
 
     if (!bus_number) {
         return res.status(400).json({ error: 'Bus number is required' });
@@ -672,7 +716,6 @@ app.post('/getbusid',verifyAdminToken, (req, res) => {
             return res.status(500).json({ error: 'Database query error' });
         }
 
-       
         if (results.length > 0) {
             const bus_id = results[0].bus_id; 
             return res.status(200).json({ result: { bus_id } });    
@@ -682,62 +725,48 @@ app.post('/getbusid',verifyAdminToken, (req, res) => {
     });
 });
 
-
-app.get('/totaloperators',verifyAdminToken,(req,res)=>{
-    connection.query('SELECT COUNT(*) AS totaloperator FROM busdetail',(err,result)=>{
-        if(err){
+app.get('/totaloperators', verifyAdminToken, (req, res) => {
+    connection.query('SELECT COUNT(*) AS totaloperator FROM busdetail', (err, result) => {
+        if (err) {
             console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json({ result: result });
         }
-        else{
-            res.status(200).json({result:result});
-        }
-})})
-    app.post('/getsuseremail',authenticate,(req,res)=>{
-        const token = req.cookies.token;
-        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-            const { email } = decoded;
-            res.status(200).json({email:email})
-        })
-
-    })
-    app.post('/gettickets',authenticate,(req,res)=>{
-        const token = req.cookies.token;
-        jwt.verify(token, process.env.SECRET_KEY_USER, (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-            const { email } = decoded;
-            
-            const query='SELECT * FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id where b.booking_email=?  AND b.date_of_booking <= t.date_of_travel';
-           connection.query(query,[email],(err,result)=>{
-            if(err){
-                console.log(err);
-            }
-            else{
-                res.status(200).json(result);   
-            }
-           })
-
-        })
-    })
-    app.post('/verifyemail',authenticate, (req, res) => {
-        const email = req.body.email;
-        connection.query('SELECT user_email, user_id FROM user WHERE user_email = ?', [email], (err, results) => {
-            if (err) {
-                console.log(err);
-                res.status(500).json({ message: 'Internal server error' });
-            } else {
-                if (results.length === 0) {
-                    res.status(200).json({ message: 'Email not registered' });
-                } else {
-                    res.status(202).json({ message: 'Email registered', user_id: results[0].user_id });
-                }
-            }
-        });
     });
+});
+
+app.post('/gettickets', authenticate, (req, res) => {
+    const email = req.user.email;
+    
+    const query = 'SELECT * FROM booking b JOIN travel t ON b.travel_id = t.travel_id JOIN busdetail bd ON t.bus_id = bd.bus_id where b.booking_email=? AND b.date_of_booking <= t.date_of_travel';
+    connection.query(query, [email], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query error' });
+        } else {
+            res.status(200).json(result);   
+        }
+    });
+});
+
+app.post('/verifyemail', authenticate, (req, res) => {
+    const email = req.body.email;
+    connection.query('SELECT user_email, user_id FROM user WHERE user_email = ?', [email], (err, results) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Internal server error' });
+        } else {
+            if (results.length === 0) {
+                res.status(200).json({ message: 'Email not registered' });
+            } else {
+                res.status(202).json({ message: 'Email registered', user_id: results[0].user_id });
+            }
+        }
+    });
+});
+
+
     app.post('/verifyotp',authenticate,(req,res)=>{
   
         const {otp,email}=req.body;
